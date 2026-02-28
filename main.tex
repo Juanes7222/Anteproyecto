@@ -1,0 +1,78 @@
+\documentclass[12pt,letterpaper]{article}
+
+% Paquetes básicos
+\usepackage[utf8]{inputenc}
+\usepackage[spanish]{babel}
+\usepackage[left=3cm,right=2cm,top=2.5cm,bottom=2.5cm]{geometry}
+\usepackage{setspace}
+\usepackage{graphicx}
+\usepackage{url}
+\usepackage[hypertexnames=false]{hyperref}
+\usepackage{amsmath}
+\usepackage{caption}
+\usepackage{float}
+\usepackage{csquotes}
+\usepackage[
+    style=apa,
+    backend=biber,
+    language=spanish,
+    sorting=nyt,
+    maxbibnames=99,
+    uniquename=init,
+    uniquelist=true
+]{biblatex}
+\DeclareLanguageMapping{spanish}{spanish-apa}
+\addbibresource{references.bib}
+
+% Configuración de interlineado
+\onehalfspacing
+
+% Información del documento
+\title{\textbf{Procesador RISC-V segmentado RV32IM con pantalla de visualización de estados en FPGA DE1-SoC}}
+\author{Juan Esteban Cardona Blandón}
+\date{\today}
+
+\begin{document}
+
+% Portada
+\input{capitulos/portada}
+
+% Tabla de contenidos
+\newpage
+\tableofcontents
+\newpage
+
+% Capítulos del anteproyecto
+\input{capitulos/resumen}
+\newpage
+
+\input{capitulos/introduccion}
+\newpage
+
+\input{capitulos/problema}
+\newpage
+
+\input{capitulos/justificacion}
+\newpage
+
+\input{capitulos/objetivos}
+\newpage
+
+\input{capitulos/marco_teorico}
+\newpage
+
+\input{capitulos/metodologia}
+\newpage
+
+\input{capitulos/cronograma}
+\newpage
+
+\input{capitulos/presupuesto}
+\newpage
+
+\input{capitulos/resultados}
+\newpage
+
+\printbibliography[title={Referencias}]
+
+\end{document}
