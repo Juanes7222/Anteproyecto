@@ -1,0 +1,14 @@
+% 2. INTRODUCCIÓN
+\section{Introducción}
+\label{sec:introduccion}
+
+La arquitectura de computadores y, en particular, el estudio de los procesadores pipeline, son temas centrales en la formación de ingenieros de sistemas porque permiten comprender cómo se organiza y optimiza 
+la ejecución de instrucciones a nivel hardware. Muchos estudiantes encuentran dificultades para visualizar de forma clara conceptos como la segmentación (pipeline), los hazards de datos y de control, y los 
+mecanismos de resolución (forwarding, stalls, predicción de saltos), ya que la explicación teórica a menudo permanece en un nivel abstracto y desvinculado del hardware real.
+Por ello, es necesario desarrollar 
+herramientas pedagógicas que acerquen la teoría a una experiencia práctica y observable en plataforma real.
+
+En este contexto, el presente trabajo propone el diseño e implementación de un procesador RISC-V de 32 bits (RV32IM) segmentado en cinco etapas (IF, ID, EX, MEM, WB), descrito en SystemVerilog y sintetizado en la FPGA DE1-SoC, junto con una consola/emulador integrada en la misma FPGA que muestre en tiempo real los estados internos del pipeline (registros interetapa, señales de control, posiciones del PC y mapeo entre instrucciones y memoria). Este enfoque permite que estudiantes y evaluadores observen directamente la ejecución superpuesta y la dinámica de resolución de dependencias, facilitando la comprensión y el análisis del comportamiento del procesador sobre hardware real. 
+
+El objetivo general de este proyecto es desarrollar la microarquitectura RISC-V RV32IM en FPGA con su correspondiente interfaz, y entre sus objetivos específicos se incluyen la especificación modular en SystemVerilog de las cinco etapas del pipeline, la implementación de la consola de visualización en la DE1-SoC y la construcción de un banco de pruebas (testbenches) que verifiquen funcionalmente el conjunto RV32IM incluyendo casos de hazards, saltos y operaciones de la extensión M. Estas metas responden además a la pregunta de investigación que guía el trabajo: ¿mejora la implementación segmentada en FPGA el rendimiento (throughput y frecuencia) frente a un procesador monociclo equivalente, manteniendo la corrección funcional?. 
+
