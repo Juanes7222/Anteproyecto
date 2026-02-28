@@ -1,0 +1,128 @@
+% 3. PLANTEAMIENTO DEL PROBLEMA
+\section{Planteamiento del Problema}
+\label{sec:problema}
+
+\subsection{Descripción del problema}
+La segmentación es la metodología común para mejorar el throughput de los procesadores al superponer la ejecución de instrucciones y facilitar ciclos de reloj más reducidos \parencite{Patterson2017Computer}. Sin embargo, en aplicaciones reales, la ganancia teórica puede estar influenciada por hazards de control y de datos, así como por la latencia de operaciones complejas (extensión M) y el costo adicional de la lógica para la resolución de hazards, lo que incrementa el CPI efectivo y utiliza recursos de la FPGA \parencite{RISCV2019Manual, Chu2011FPGA}.
+Hay una falta de investigaciones experimentales consistentes que contrasten, en la misma plataforma FPGA y utilizando el mismo protocolo de medición, un núcleo RV32IM realizado tanto en su versión de ciclo único como en pipeline de cinco etapas. Sin esa comparación controlada, no existe evidencia replicable para determinar si, en FPGAs de capacidad media (por ejemplo. DE1-SoC), la complejidad extra del pipeline compensa el coste en términos de eficiencia, superficie y energía. Para abordar esa brecha, esta investigación ejecutará ambas microarquitecturas en la DE1-SoC, evaluará Fmax tras place-and-route, CPI en hardware y verificará la corrección funcional a través de riscv-tests complementados con una pantalla de visualización que posibilitará la inspección ciclo a ciclo de registros interetapa y señales de hazard.
+
+
+\subsection{Formulación del problema}
+
+\textit{Pregunta principal:} ¿La implementación de una microarquitectura RISC-V RV32IM segmentada en cinco etapas sobre FPGA
+mejora el rendimiento, en términos de throughput y frecuencia, frente a un procesador monociclo
+equivalente, manteniendo la corrección funcional?
+
+
+% \textit{Preguntas secundarias:}
+% \begin{itemize}
+%     \item ¿[Pregunta secundaria 1]?
+%     \item ¿[Pregunta secundaria 2]?
+%     \item ¿[Pregunta secundaria 3]?
+% \end{itemize}
+
+
+%================================
+\subsection{Antecedentes}
+\label{sec:Antecedentes}
+
+La técnica de segmentación o pipelining se consolidó desde la década de 1960 como mecanismo esencial para aumentar el throughput de procesadores mediante la superposición de la ejecución de instrucciones (etapas IF, ID, EX, MEM, WB) y sigue siendo la estrategia predominante en diseños RISC educativos y comerciales \parencite{Patterson2017Computer}. Sin embargo, investigaciones clásicas y contemporáneas han mostrado que el beneficio teórico del pipeline depende fuertemente de las dependencias entre instrucciones (hazards) y de las técnicas de mitigación aplicadas; sin una estrategia efectiva de forwarding, stalling y gestión de saltos, el CPI efectivo puede aumentar notablemente, reduciendo el speed-up práctico del pipeline \parencite{Smith1988Implementing,Wall1991Limits}.
+
+RISC-V, una ISA abierta y modular desarrollada en Berkeley,  ha impulsado una ola de implementaciones académicas y experimentales en FPGA por su accesibilidad y flexibilidad para extender la ISA \parencite{RISCV2019Manual}. La configuración RV32IM es de particular interés en aplicaciones embebidas que requieren operaciones aritméticas aceleradas por hardware; sin embargo, la inclusión de instrucciones M introduce latencias y caminos críticos que afectan de manera distinta a arquitecturas monociclo y pipeline.
+
+Las FPGAs constituyen una plataforma para prototipado y verificación in-hardware de microarquitecturas debido a su reconfigurabilidad y tiempos de iteración acortados \parencite{Chu2011FPGA}. En la literatura reciente se han reportado implementaciones RISC-V tanto monociclo como pipelined en distintas familias de FPGA, con resultados muy variables en Fmax, CPI y CoreMark/MHz \parencite{Heinz2019Catalog,NRP2024Performance}. No obstante, la mayoría de los estudios presentan una de estas tres limitaciones: 
+\begin{enumerate}
+    \item Implementaciones aisladas (solo monociclo o solo pipeline) 
+    \item Empleo de diferentes plataformas FPGA (Xilinx vs. Intel/Altera)
+    \item Evaluación con protocolos experimentales no homogéneos que impiden una comparación directa.
+\end{enumerate}
+
+Por tanto, en la literatura revisada se identifica una brecha: no existen, en fuentes accesibles, estudios que implementen ambas microarquitecturas del mismo núcleo RV32IM, sintetizadas en la misma plataforma FPGA, evaluadas con el mismo flujo de síntesis, como lo es Quartus Prime, las mismas suites de verificación, como riscv-tests, y protocolos de medida comparables. Sin esta comparación controlada, falta evidencia empírica reproducible para decidir si, en FPGAs de capacidad moderada, el overhead del pipeline compensa el potencial aumento de frecuencia y throughput.
+
+
+
+%================================
+\subsection{Causas}
+\label{sec:Causas}
+
+
+La ausencia de comparaciones experimentales controladas entre arquitecturas monociclo y pipeline de procesadores RISC-V RV32IM implementados en la misma plataforma FPGA no es accidental, sino resultado de múltiples factores técnicos, metodológicos y prácticos que dificultan la realización de este tipo de estudios. A continuación se analizan las causas principales que han perpetuado esta brecha en la literatura científica.
+
+\begin{enumerate}
+    \item La implementación de un procesador funcional completo en FPGA requiere un esfuerzo de desarrollo significativo que incluye diseño RTL, verificación funcional, síntesis, optimización de timing, y depuración iterativa \parencite{Chu2011FPGA}. Cada arquitectura (monociclo y pipeline) presenta desafíos técnicos específicos que multiplican el tiempo de desarrollo total.
+    
+    Para arquitecturas monociclo, aunque conceptualmente más simples, el diseño debe manejar un camino de datos extenso donde todas las etapas (fetch, decode, execute, memory, writeback) operan secuencialmente en un único ciclo largo. Esto resulta en caminos críticos combinacionales extensos que complican el análisis de timing y requieren optimización cuidadosa para alcanzar frecuencias razonables \parencite{Harris2021Digital}. La unidad de control debe generar todas las señales necesarias basándose únicamente en el opcode de la instrucción actual, requiriendo lógica decodificadora completa en un solo bloque.
+
+    Para arquitecturas pipeline, la complejidad aumenta significativamente debido a la necesidad de implementar:
+
+        \begin{itemize}
+            \item \textbf{Registros interetapa (IF/ID, ID/EX, EX/MEM, MEM/WB):} diseño, manejo de enable/flush signals, propagación correcta de señales de control a través de las etapas \parencite{Harris2021Digital}
+            \item \textbf{Unidad de detección de hazards:} lógica que identifica dependencias RAW (Read-After-Write) entre instrucciones en diferentes etapas del pipeline, comparando registros fuente de instrucción en ID con registros destino de instrucciones en EX, MEM y WB. Esta unidad debe operar en el camino crítico y puede afectar la frecuencia máxima alcanzable \parencite{Patterson2017Computer}.
+            \item Unidad de forwarding: multiplexores adicionales en la entrada de la ALU que permiten redireccionar datos desde etapas MEM/WB directamente a EX, evitando stalls innecesarios. Esto requiere 4-8 paths de forwarding con lógica de selección compleja \parencite{Mnaaoui2018Pipeline}.
+
+            \item Lógica de control de stalling: capacidad de detener selectivamente etapas del pipeline insertando burbujas (NOPs) cuando hazards inevitables (load-use) son detectados, manteniendo coherencia del estado del procesador \parencite{Patterson2017Computer}.
+
+            \item Manejo de branches: detección temprana de saltos en etapa ID o EX, cálculo de dirección de salto, lógica de flush del pipeline cuando branch es taken (descartando instrucciones incorrectamente fetched), y opcionalmente, branch prediction con tablas de historia y actualización dinámica \parencite{Patterson2017Computer}.
+
+        \end{itemize}
+
+        \item Para que una comparación entre arquitecturas monociclo y pipeline sea científicamente válida, es imperativo garantizar que ambas implementaciones ejecutan exactamente la misma ISA con corrección funcional idéntica. Esto requiere verificación exhaustiva que consume tiempo y recursos significativos.
+
+           La verificación de conformidad funcional en procesadores RISC-V suele basarse en suites oficiales como riscv-tests y riscv-compliance, que proporcionan colecciones de pruebas dirigidas para distintos subconjuntos de la ISA. En particular, los conjuntos de pruebas para RV32I y RV32IM incluyen varias decenas de programas enfocados por instrucción y por categoría (por ejemplo, rv32ui para instrucciones enteras básicas y rv32um para operaciones de multiplicación y división), cubriendo instrucciones individuales, casos límite como overflow aritmético o división por cero, y patrones de dependencias entre instrucciones consecutivas.  Ejecutar y validar estas suites para cada microarquitectura requiere instrumentar el procesador para cargar y ejecutar cada test, recoger el resultado de salida esperado y confirmar automáticamente la ausencia de fallos, lo que convierte la verificación en una fase sustancial del esfuerzo total de desarrollo.
+
+           \begin{itemize}
+            \item Infraestructura de testbench: código SystemVerilog/Verilog que carga programas de prueba en la memoria de instrucciones, ejecuta el procesador, captura el estado final (registros y memoria) y lo compara contra valores esperados para determinar si el comportamiento es correcto.
+            
+            \item Debugging iterativo: cuando una prueba falla, es necesario identificar la causa raíz en el código RTL, corregir, volver a sintetizar si corresponde y reejecutar los tests. En microarquitecturas pipeline, los errores relacionados con hazards de datos o de control suelen ser especialmente difíciles de detectar porque dependen de patrones de dependencias entre instrucciones y de condiciones de carrera temporales, por lo que pueden manifestarse solo bajo secuencias específicas de ejecución. Este tipo de bugs se considera en la práctica uno de los desafíos más complejos en el ciclo de verificación de procesadores pipeline.
+
+            \item Validación de equivalencia: después de pasar suites como riscv-tests de manera individual, es necesario comprobar que las dos microarquitecturas den resultados exactamente coincidentes (bit a bit) para programas más complejos, no solo que ambas sean funcionalmente correctas en forma aislada. Esto implica ejecutar las mismas cargas de trabajo sobre ambos diseños, capturar los estados finales relevantes (registros, memoria) y compararlos de forma sistemática. En la práctica, diferentes reportes de la industria y de la comunidad RISC-V coinciden en que la verificación funcional y la depuración de procesadores consumen una fracción muy significativa del esfuerzo total de desarrollo debido a la necesidad de combinar pruebas dirigidas, suites de conformidad, generación de tests aleatorios y, cada vez más, herramientas de verificación formal como riscv-formal.  Dado que gran parte de este esfuerzo debe repetirse para cada variante de microarquitectura, implementar y verificar simultáneamente una versión monociclo y una versión pipeline tiende a incrementar sustancialmente la carga total de verificación.
+           \end{itemize}
+
+           \item La comunidad de investigación en arquitectura de computadores implementa diseños RISC-V en una diversidad de plataformas FPGA de diferentes fabricantes y generaciones tecnológicas, cada una con características arquitecturales distintivas que afectan profundamente el rendimiento sintetizado.
+
+            Diferencias entre familias FPGA:
+
+            Arquitectura de LUTs: dispositivos Xilinx de la familia 7-series utilizan bloques lógicos basados en LUTs de 6 entradas integradas en CLBs, mientras que dispositivos Intel/Altera como Cyclone V emplean módulos lógicos adaptativos (ALMs) que agrupan dos LUTs fracturables con hasta 8 entradas compartidas, además de lógica adicional de suma, multiplexores y flip-flops. Estas diferencias en la organización interna influyen en cómo las funciones lógicas complejas se mapean a recursos físicos y, en consecuencia, en el retardo de los caminos críticos y la utilización de recursos reportada por las herramientas de síntesis \parencite{percey2007virtex5}.
+
+            Block RAM: La arquitectura interna de memoria también difiere significativamente; los dispositivos Cyclone V de Intel proporcionan bloques M10K de 10 Kbits y MLABs más pequeños, mientras que las familias equivalentes de Xilinx ofrecen bloques BRAM configurables de 18 o 36 Kbits. Estas diferencias en capacidad nativa, latencia de acceso y modos de operación afectan directamente la eficiencia con la que se implementan componentes críticos del procesador, tales como las memorias de instrucción y datos, o el banco de registros \parencite{intel2016cyclone,xilinx2020ug473}
+
+            DSP blocks: Cyclone V tiene multiplicadores 18×18 con arquitectura específica Intel; Xilinx 7-series tiene DSP48E1 slices con funcionalidad diferente. Esto afecta directamente la implementación de extensión M (multiplicación/división), pudiendo favorecer una arquitectura sobre otra según cómo los DSP blocks se integran en el datapath (Intel Corporation, 2016).
+
+            Herramientas de síntesis: Intel Quartus Prime vs. Xilinx Vivado emplean algoritmos de optimización, estrategias de place-and-route y análisis de timing diferentes, generando resultados Fmax no directamente comparables incluso para diseño RTL idéntico sintetizado en FPGAs equivalentes en capacidad (Lavin et al., 2018).
+
+            Como resultado, los resultados publicados para diferentes FPGAs no son directamente comparables. Por ejemplo, un pipeline RV32IM alcanzando 85 MHz en Xilinx Artix-7 (Performance-Optimised Design, 2024) no puede compararse válidamente con un monociclo alcanzando 30 MHz en Intel Cyclone V (Reddy et al., 2024) para concluir que "pipeline es 2.8× más rápido", porque las diferencias pueden deberse a la plataforma FPGA, no a la arquitectura del procesador.
+
+
+            
+
+            
+
+\end{enumerate}
+
+
+
+
+
+
+
+
+4. A diferencia de procesadores comerciales, donde benchmarks como SPEC CPU, CoreMark y Dhrystone tienen protocolos de ejecución, reporte y validación estrictamente definidos (EEMBC, 2009), la comunidad de implementaciones RISC-V en FPGA carece de estándares ampliamente adoptados para medición y reporte de rendimiento.
+
+Problemas específicos identificados en la literatura:
+
+Variabilidad en configuración de benchmarks: Diferentes estudios ejecutan CoreMark con iteraciones variables (10 segundos vs. 30 segundos), seeds diferentes, opciones de compilador distintas (-O2 vs. -O3 vs. -Os), generando scores no directamente comparables (Heinz et al., 2019).
+
+Reportes incompletos de métricas: Muchos trabajos reportan solo Fmax o solo CPI, pero no ambos simultáneamente ni throughput calculado (Fmax/CPI). Algunos reportan MIPS sin especificar claramente si es teórico o medido con benchmark real (Liu et al., 2021).
+
+Falta de normalización: Frecuentemente se reporta CoreMark score absoluto (ej: "2500 CoreMarks") sin normalizar por MHz, haciendo comparación entre diseños a diferentes frecuencias inválidas. La métrica correcta CoreMark/MHz elimina efecto de frecuencia, permitiendo comparar eficiencia arquitectural pura, pero no todos los estudios la reportan (EEMBC, 2009).
+
+Ausencia de análisis estadístico: Pocos trabajos reportan múltiples runs de benchmarks con media y desviación estándar. Ejecuciones únicas pueden estar afectadas por variabilidad en síntesis, condiciones de temperatura en FPGA, o efectos de timing non-determinísticos, reduciendo confiabilidad de resultados (Bachrach et al., 2012).
+
+Definición del problema (un párrafo simple)
+
+Aunque existen múltiples implementaciones RISC-V en FPGA, los estudios previos no ofrecen comparaciones directas ni homogéneas entre una arquitectura monociclo y una arquitectura pipeline de cinco etapas para un procesador RV32IM en la misma plataforma FPGA. Esta falta de evidencia comparable dificulta establecer con claridad si la microarquitectura pipeline realmente proporciona ventajas de rendimiento frente a un diseño monociclo equivalente bajo condiciones controladas.
+
+Consecuencias (de no resolver el problema)
+La ausencia de protocolos estandarizados de comparación limita la posibilidad de integrar resultados provenientes de distintos estudios. Cada trabajo aporta datos parciales que no pueden relacionarse adecuadamente con implementaciones similares, lo que impide construir conclusiones sólidas sobre los trade-offs reales entre monociclo y pipeline.
+Cuando las mediciones de rendimiento, utilización de recursos o CPI se realizan con metodologías diferentes, los resultados no son replicables ni comparables por otros investigadores. Esto afecta la confiabilidad científica y dificulta la validación independiente de hallazgos.
+
