@@ -3,12 +3,13 @@
 \label{sec:objetivos}
 
 \subsection{Objetivo General}
-[Define un objetivo general claro, medible y alcanzable que responda a la pregunta principal de investigación. Debe iniciar con un verbo en infinitivo.]
+ Desarrollar en FPGA una microarquitectura RISC-V RV32IM segmentada en cinco etapas, acompañada de una pantalla que permita la visualización paso a paso de los estados internos del pipeline.
 
 \subsection{Objetivos Específicos}
 \begin{enumerate}
-    \item [Objetivo específico 1: debe contribuir al logro del objetivo general]
-    \item [Objetivo específico 2: debe ser medible y alcanzable]
-    \item [Objetivo específico 3: debe estar claramente definido]
-    \item [Objetivo específico 4: si es necesario]
+
+\item Definir la microarquitectura pipeline de cinco etapas (IF, ID, EX, MEM, WB) y su especificación en SystemVerilog con módulos claramente separados.
+\item Desarrollar un emulador que muestre en tiempo real los registros interetapa, señales de control, PC y traza de instrucciones, ejecución continua orientadas al uso docente.
+\item Construir un conjunto de testbenches y un banco de pruebas que verifiquen funcionalmente el conjunto RV32IM, incluyendo casos de hazards, saltos y operaciones M.
+
 \end{enumerate}
