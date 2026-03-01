@@ -2,4 +2,21 @@
 \section{Justificación}
 \label{sec:justificacion}
 
-[Explica por qué es importante realizar este proyecto. Describe el impacto esperado, los beneficios que aportará y a quiénes beneficiará. Justifica la relevancia académica, social, técnica o económica del proyecto.]
+
+\subsection{Justificación científica y tecnológica} 
+La arquitectura RISC-V se ha consolidado como un referente en investigación y desarrollo debido a que es abierta, modular y extensible, lo que ha motivado numerosas implementaciones en FPGA orientadas a explorar rendimiento y eficiencia en sistemas embebidos. En este contexto, realizar una comparación experimental controlada entre una microarquitectura RV32IM monociclo y una microarquitectura RV32IM segmentada en cinco etapas, ambas implementadas sobre la misma FPGA Cyclone V y bajo un protocolo homogéneo de síntesis, verificación y medición, permite contrastar las predicciones teóricas sobre throughput y frecuencia con resultados obtenidos en hardware real. Esto aporta evidencia objetiva sobre los trade-offs de diseño entre simplicidad microarquitectural y complejidad del pipeline, contribuyendo a reducir el vacío existente en la literatura respecto a comparaciones directas  para un mismo procesador y plataforma.
+
+\subsection{Justificación educativa y social} 
+Desarrollar un procesador RISC-V RV32IM completo en la tarjeta DE1-SoC implica abordar restricciones reales de recursos lógicos, bloques de memoria, bloques DSP y márgenes de temporización propios de la FPGA Cyclone V, así como las limitaciones de las herramientas de síntesis y place-and-route. El proyecto permite cuantificar, en un entorno representativo de laboratorio, el impacto de pasar de una arquitectura monociclo a una segmentada sobre la frecuencia máxima alcanzable, el CPI efectivo, el throughput y la utilización de recursos, aportando datos sobre la viabilidad y el desempeño real de procesadores RV32IM en este tipo de plataformas. Estos resultados pueden servir como referencia práctica para diseñadores e investigadores que deban decidir entre implementar procesadores monociclo o pipeline en FPGAs de capacidad similar.
+
+\subsection{Justificación Técnica} 
+Aunque el objetivo principal del estudio es técnico y se centra en la comparación de rendimiento, el procesador resultante y la consola de visualización de estados internos constituyen un recurso potencialmente valioso para la formación en arquitectura de computadores. La posibilidad de observar el flujo de instrucciones a través de las etapas del pipeline, las señales de control y la resolución de hazards ofrece una herramienta de apoyo para la docencia y la experimentación en cursos de sistemas digitales y procesadores, facilitando la conexión entre la teoría y el comportamiento observable en hardware reconfigurable
+
+
+
+
+
+
+
+
+
