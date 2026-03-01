@@ -97,35 +97,22 @@ La ausencia de comparaciones experimentales controladas entre arquitecturas mono
 
                 Problemas específicos identificados en la literatura:
 
-                Variabilidad en configuración de benchmarks: Diferentes estudios que evalúan procesadores RISC-V en FPGA ejecutan CoreMark con configuraciones heterogéneas —por ejemplo, variando el tiempo total de ejecución, las opciones del compilador o incluso la forma de reportar el resultado, lo que dificulta la comparación directa entre implementaciones. \parencite{Heinz2019Catalog} muestran que parámetros como la configuración del compilador y de la plataforma tienen un impacto notable en los resultados de CoreMark para distintos softcores RISC-V, reforzando la necesidad de protocolos más homogéneos de medición.
+                \begin{itemize}
+                    \item Variabilidad en configuración de benchmarks: Diferentes estudios que evalúan procesadores RISC-V en FPGA ejecutan CoreMark con configuraciones heterogéneas —por ejemplo, variando el tiempo total de ejecución, las opciones del compilador o incluso la forma de reportar el resultado, lo que dificulta la comparación directa entre implementaciones. \parencite{Heinz2019Catalog} muestran que parámetros como la configuración del compilador y de la plataforma tienen un impacto notable en los resultados de CoreMark para distintos softcores RISC-V, reforzando la necesidad de protocolos más homogéneos de medición.
 
-                ----
+                    \item Falta de normalización: En muchos trabajos sobre implementaciones RISC-V en FPGA se reporta el resultado de CoreMark como un valor absoluto (por ejemplo, “2500 CoreMarks”) sin normalizar por la frecuencia de operación, lo que hace inválida la comparación directa entre diseños que corren a distintas frecuencias. La métrica recomendada en la documentación de CoreMark es precisamente CoreMark/MHz, que se obtiene dividiendo el score por la frecuencia de reloj y permite comparar de forma más justa la eficiencia arquitectural entre procesadores con pipelines o tecnologías distintas, al reducir el efecto de la frecuencia de reloj sobre el resultado \parencite{EEMBC2009CoreMark,arm2022coremark,analog2023coremark}.
 
-                Reportes incompletos de métricas: Muchos trabajos reportan solo Fmax o solo CPI, pero no ambos simultáneamente ni throughput calculado (Fmax/CPI). Algunos reportan MIPS sin especificar claramente si es teórico o medido con benchmark real (Liu et al., 2021).
-
-                Falta de normalización: Frecuentemente se reporta CoreMark score absoluto (ej: "2500 CoreMarks") sin normalizar por MHz, haciendo comparación entre diseños a diferentes frecuencias inválidas. La métrica correcta CoreMark/MHz elimina efecto de frecuencia, permitiendo comparar eficiencia arquitectural pura, pero no todos los estudios la reportan (EEMBC, 2009).
-
-                Ausencia de análisis estadístico: Pocos trabajos reportan múltiples runs de benchmarks con media y desviación estándar. Ejecuciones únicas pueden estar afectadas por variabilidad en síntesis, condiciones de temperatura en FPGA, o efectos de timing non-determinísticos, reduciendo confiabilidad de resultados (Bachrach et al., 2012).
-            
-
-            
+                    \item Ausencia de análisis estadístico: En la mayoría de los trabajos sobre implementaciones de procesadores RISC‑V en FPGA los benchmarks se ejecutan una sola vez y se reporta un único valor de rendimiento (por ejemplo, un score de CoreMark o una frecuencia máxima), sin incluir múltiples ejecuciones ni estadísticas descriptivas como media y desviación estándar. Este enfoque ignora la variabilidad introducida por factores como diferencias entre compilaciones, condiciones de temperatura en la FPGA o pequeñas variaciones en el flujo de síntesis y place-and-route, lo que reduce la confiabilidad de las conclusiones extraídas a partir de un único dato puntual.
+                \end{itemize}
 
 \end{enumerate}
 
 
-
-
-
-
-
-
-
-
-Definición del problema (un párrafo simple)
+\subsection{Definición del problema }
 
 Aunque existen múltiples implementaciones RISC-V en FPGA, los estudios previos no ofrecen comparaciones directas ni homogéneas entre una arquitectura monociclo y una arquitectura pipeline de cinco etapas para un procesador RV32IM en la misma plataforma FPGA. Esta falta de evidencia comparable dificulta establecer con claridad si la microarquitectura pipeline realmente proporciona ventajas de rendimiento frente a un diseño monociclo equivalente bajo condiciones controladas.
 
-Consecuencias (de no resolver el problema)
+\subsection{Consecuencias}
 La ausencia de protocolos estandarizados de comparación limita la posibilidad de integrar resultados provenientes de distintos estudios. Cada trabajo aporta datos parciales que no pueden relacionarse adecuadamente con implementaciones similares, lo que impide construir conclusiones sólidas sobre los trade-offs reales entre monociclo y pipeline.
 Cuando las mediciones de rendimiento, utilización de recursos o CPI se realizan con metodologías diferentes, los resultados no son replicables ni comparables por otros investigadores. Esto afecta la confiabilidad científica y dificulta la validación independiente de hallazgos.
 
