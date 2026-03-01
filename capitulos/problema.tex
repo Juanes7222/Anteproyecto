@@ -82,17 +82,30 @@ La ausencia de comparaciones experimentales controladas entre arquitecturas mono
 
             Diferencias entre familias FPGA:
 
-            Arquitectura de LUTs: dispositivos Xilinx de la familia 7-series utilizan bloques lógicos basados en LUTs de 6 entradas integradas en CLBs, mientras que dispositivos Intel/Altera como Cyclone V emplean módulos lógicos adaptativos (ALMs) que agrupan dos LUTs fracturables con hasta 8 entradas compartidas, además de lógica adicional de suma, multiplexores y flip-flops. Estas diferencias en la organización interna influyen en cómo las funciones lógicas complejas se mapean a recursos físicos y, en consecuencia, en el retardo de los caminos críticos y la utilización de recursos reportada por las herramientas de síntesis \parencite{percey2007virtex5}.
+            \begin{itemize}
+                \item Arquitectura de LUTs: dispositivos Xilinx de la familia 7-series utilizan bloques lógicos basados en LUTs de 6 entradas integradas en CLBs, mientras que dispositivos Intel/Altera como Cyclone V emplean módulos lógicos adaptativos (ALMs) que agrupan dos LUTs fracturables con hasta 8 entradas compartidas, además de lógica adicional de suma, multiplexores y flip-flops. Estas diferencias en la organización interna influyen en cómo las funciones lógicas complejas se mapean a recursos físicos y, en consecuencia, en el retardo de los caminos críticos y la utilización de recursos reportada por las herramientas de síntesis \parencite{percey2007virtex5}.
 
-            Block RAM: La arquitectura interna de memoria también difiere significativamente; los dispositivos Cyclone V de Intel proporcionan bloques M10K de 10 Kbits y MLABs más pequeños, mientras que las familias equivalentes de Xilinx ofrecen bloques BRAM configurables de 18 o 36 Kbits. Estas diferencias en capacidad nativa, latencia de acceso y modos de operación afectan directamente la eficiencia con la que se implementan componentes críticos del procesador, tales como las memorias de instrucción y datos, o el banco de registros \parencite{intel2016cyclone,xilinx2020ug473}
+            \item Block RAM: La arquitectura interna de memoria también difiere significativamente; los dispositivos Cyclone V de Intel proporcionan bloques M10K de 10 Kbits y MLABs más pequeños, mientras que las familias equivalentes de Xilinx ofrecen bloques BRAM configurables de 18 o 36 Kbits. Estas diferencias en capacidad nativa, latencia de acceso y modos de operación afectan directamente la eficiencia con la que se implementan componentes críticos del procesador, tales como las memorias de instrucción y datos, o el banco de registros \parencite{intel2016cyclone,xilinx2020ug473}
 
-            DSP blocks: Cyclone V tiene multiplicadores 18×18 con arquitectura específica Intel; Xilinx 7-series tiene DSP48E1 slices con funcionalidad diferente. Esto afecta directamente la implementación de extensión M (multiplicación/división), pudiendo favorecer una arquitectura sobre otra según cómo los DSP blocks se integran en el datapath (Intel Corporation, 2016).
+            \item DSP blocks: Los dispositivos Cyclone V de Intel incorporan bloques DSP de precisión variable que permiten implementar multiplicadores de 18x18, 27x27 y configuraciones derivadas, mientras que las FPGAs Xilinx 7-series integran slices DSP48E1 con un multiplicador típico de 25x18 bits junto con pre-adders y acumuladores de 48 bits. Estas diferencias en la arquitectura interna de los bloques DSP y en su modo de integración con la lógica de la FPGA influyen directamente en cómo se implementa la extensión M de RISC-V, pudiendo favorecer una u otra familia según el tamaño de operandos, el grado de pipeline interno y el estilo de datapath empleado \parencite{intel2018variable,xilinx2014ug479}.
 
-            Herramientas de síntesis: Intel Quartus Prime vs. Xilinx Vivado emplean algoritmos de optimización, estrategias de place-and-route y análisis de timing diferentes, generando resultados Fmax no directamente comparables incluso para diseño RTL idéntico sintetizado en FPGAs equivalentes en capacidad (Lavin et al., 2018).
+            \item Herramientas de síntesis: Las cadenas de herramientas empleadas utilizan algoritmos de optimización, estrategias de mapeo tecnológico, ubicación y enrutamiento y análisis de temporización estática distintos. Estas variaciones metodológicas en el flujo CAD implican que un mismo código RTL sintetizado para FPGAs equivalentes en capacidad lógica puede generar frecuencias máximas y reportes de utilización de recursos que no son directamente comparables, añadiendo una capa de incertidumbre al comparar resultados de diferentes plataformas \parencite{murray2020vtr8,Heinz2019Catalog}.
 
-            Como resultado, los resultados publicados para diferentes FPGAs no son directamente comparables. Por ejemplo, un pipeline RV32IM alcanzando 85 MHz en Xilinx Artix-7 (Performance-Optimised Design, 2024) no puede compararse válidamente con un monociclo alcanzando 30 MHz en Intel Cyclone V (Reddy et al., 2024) para concluir que "pipeline es 2.8× más rápido", porque las diferencias pueden deberse a la plataforma FPGA, no a la arquitectura del procesador.
+            \end{itemize}
 
+            \item A diferencia de los procesadores comerciales, donde benchmarks como SPEC CPU, CoreMark y Dhrystone cuentan con protocolos de ejecución, reporte y validación estrictamente definidos por consorcios y organizaciones como EEMBC y SPEC \parencite{EEMBC2009CoreMark}, la comunidad de implementaciones RISC-V en FPGA carece de estándares ampliamente adoptados para la medición y el reporte de rendimiento.
 
+                Problemas específicos identificados en la literatura:
+
+                Variabilidad en configuración de benchmarks: Diferentes estudios que evalúan procesadores RISC-V en FPGA ejecutan CoreMark con configuraciones heterogéneas —por ejemplo, variando el tiempo total de ejecución, las opciones del compilador o incluso la forma de reportar el resultado, lo que dificulta la comparación directa entre implementaciones. \parencite{Heinz2019Catalog} muestran que parámetros como la configuración del compilador y de la plataforma tienen un impacto notable en los resultados de CoreMark para distintos softcores RISC-V, reforzando la necesidad de protocolos más homogéneos de medición.
+
+                ----
+
+                Reportes incompletos de métricas: Muchos trabajos reportan solo Fmax o solo CPI, pero no ambos simultáneamente ni throughput calculado (Fmax/CPI). Algunos reportan MIPS sin especificar claramente si es teórico o medido con benchmark real (Liu et al., 2021).
+
+                Falta de normalización: Frecuentemente se reporta CoreMark score absoluto (ej: "2500 CoreMarks") sin normalizar por MHz, haciendo comparación entre diseños a diferentes frecuencias inválidas. La métrica correcta CoreMark/MHz elimina efecto de frecuencia, permitiendo comparar eficiencia arquitectural pura, pero no todos los estudios la reportan (EEMBC, 2009).
+
+                Ausencia de análisis estadístico: Pocos trabajos reportan múltiples runs de benchmarks con media y desviación estándar. Ejecuciones únicas pueden estar afectadas por variabilidad en síntesis, condiciones de temperatura en FPGA, o efectos de timing non-determinísticos, reduciendo confiabilidad de resultados (Bachrach et al., 2012).
             
 
             
@@ -106,17 +119,7 @@ La ausencia de comparaciones experimentales controladas entre arquitecturas mono
 
 
 
-4. A diferencia de procesadores comerciales, donde benchmarks como SPEC CPU, CoreMark y Dhrystone tienen protocolos de ejecución, reporte y validación estrictamente definidos (EEMBC, 2009), la comunidad de implementaciones RISC-V en FPGA carece de estándares ampliamente adoptados para medición y reporte de rendimiento.
 
-Problemas específicos identificados en la literatura:
-
-Variabilidad en configuración de benchmarks: Diferentes estudios ejecutan CoreMark con iteraciones variables (10 segundos vs. 30 segundos), seeds diferentes, opciones de compilador distintas (-O2 vs. -O3 vs. -Os), generando scores no directamente comparables (Heinz et al., 2019).
-
-Reportes incompletos de métricas: Muchos trabajos reportan solo Fmax o solo CPI, pero no ambos simultáneamente ni throughput calculado (Fmax/CPI). Algunos reportan MIPS sin especificar claramente si es teórico o medido con benchmark real (Liu et al., 2021).
-
-Falta de normalización: Frecuentemente se reporta CoreMark score absoluto (ej: "2500 CoreMarks") sin normalizar por MHz, haciendo comparación entre diseños a diferentes frecuencias inválidas. La métrica correcta CoreMark/MHz elimina efecto de frecuencia, permitiendo comparar eficiencia arquitectural pura, pero no todos los estudios la reportan (EEMBC, 2009).
-
-Ausencia de análisis estadístico: Pocos trabajos reportan múltiples runs de benchmarks con media y desviación estándar. Ejecuciones únicas pueden estar afectadas por variabilidad en síntesis, condiciones de temperatura en FPGA, o efectos de timing non-determinísticos, reduciendo confiabilidad de resultados (Bachrach et al., 2012).
 
 Definición del problema (un párrafo simple)
 
