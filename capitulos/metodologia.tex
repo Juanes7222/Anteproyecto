@@ -2,19 +2,146 @@
 \section{Metodología}
 \label{sec:metodologia}
 
-\subsection{Tipo de investigación}
-[Describe el tipo de investigación: exploratoria, descriptiva, explicativa, experimental, etc.]
+\subsection{Marco metodológico}
 
-\subsection{Fases del proyecto}
-\begin{enumerate}
-    \item \textbf{Fase 1: } [Nombre y descripción de la primera fase]
-    \item \textbf{Fase 2: } [Nombre y descripción de la segunda fase]
-    \item \textbf{Fase 3: } [Nombre y descripción de la tercera fase]
-    \item \textbf{Fase 4: } [Nombre y descripción de la cuarta fase]
-\end{enumerate}
+\subsubsection{Descripción de tratamientos}
 
-\subsection{Técnicas e instrumentos}
-[Describe los métodos, técnicas e instrumentos que se utilizarán para recopilar y analizar datos o desarrollar el proyecto.]
+En este estudio se comparan experimentalmente dos variantes de un mismo procesador RISC-V:
 
-\subsection{Población y muestra}
-[Si aplica, describe la población objetivo y la muestra con la que se trabajará.]
+\begin{itemize}
+    \item \textbf{Tratamiento 1}: microarquitectura RV32IM monociclo, que ejecuta cada instrucción en un único ciclo de reloj.
+    \item \textbf{Tratamiento 2}: microarquitectura RV32IM segmentada en cinco etapas (IF, ID, EX, MEM, WB), con resolución explícita de \textit{hazards} de datos y control.
+\end{itemize}
+
+Ambas versiones se diseñan en SystemVerilog, se sintetizan en la misma FPGA Intel Cyclone V DE1-SoC utilizando Intel Quartus Prime, y se someten a los mismos protocolos de verificación funcional que será la suite riscv-tests y evaluación de rendimiento que serán benchmarks CoreMark y programas de prueba representativos.
+
+
+\subsubsection{Unidad experimental}
+En este estudio, la unidad experimental se define como cada instancia sintetizada del procesador ejecutando un caso de prueba específico bajo condiciones controladas. Es decir, no se considera como unidad experimental la FPGA física de forma abstracta ni el diseño RTL en general, sino la configuración concreta del hardware sintetizado correspondiente a una de las microarquitecturas cuando ejecuta un test o benchmark determinado.
+
+Cada unidad experimental se evalúa de manera independiente durante la ejecución de cada caso de prueba. El comportamiento se registra mediante instrumentación embebida en el propio diseño del procesador y en la lógica auxiliar de medición, que incorpora contadores de ciclos, registros para el Program Counter, señales asociadas a la resolución de hazards y estados de los registros inter-etapa del pipeline.
+
+\subsubsection{Número de unidades y respaldo estadístico}
+
+Para cada combinación de tratamiento y programa de prueba se ejecutará un mínimo de cinco (5) réplicas independientes. En cada réplica se realizará una nueva síntesis e implementación del diseño en Quartus Prime, seguida de la ejecución del mismo conjunto de pruebas sobre la FPGA, con el fin de capturar posibles variaciones en la frecuencia máxima derivadas del flujo de síntesis y \textit{place-and-route}.
+
+Este tamaño muestral busca un equilibrio entre rigor experimental y viabilidad práctica: cinco ejecuciones permiten estimar estadísticamente la media y una desviación estándar representativa de F\textsubscript{max} y de las métricas de rendimiento asociadas, sin que el costo computacional de repetir síntesis e implementaciones se vuelva prohibitivo. La elección de cinco réplicas es consistente con prácticas comunes en evaluación de implementaciones hardware y benchmarking de sistemas embebidos, donde la variabilidad proviene principalmente de las heurísticas de las herramientas de síntesis y no de ruido estocástico en la ejecución, y donde se suelen realizar varias corridas para reportar valores promedio y dispersión básica de las métricas.
+
+\subsubsection{Diseño experimental y asignación}
+
+Se adopta un diseño experimental controlado de medidas repetidas, en el cual cada programa de prueba se ejecuta sobre ambas microarquitecturas bajo condiciones lo más homogéneas posible: misma frecuencia de reloj configurada en tiempo de síntesis, mismos archivos de entrada, mismas opciones de compilación y captura de salidas mediante scripts automatizados que registran las métricas de interés.
+
+En este contexto no se recurre a una asignación aleatoria de tratamientos en el sentido clásico, dado que:
+\begin{itemize}
+    \item Los tratamientos corresponden a configuraciones deterministas de hardware sintetizado.
+    \item Todas las ejecuciones se realizan sobre la misma plataforma FPGA bajo condiciones controladas.
+    \item El orden en que se ejecutan los distintos testbenches sobre cada arquitectura no introduce efectos de arrastre, pues cada ejecución comienza desde un estado inicial bien definido y las corridas son independientes entre sí.
+\end{itemize}
+
+\subsubsection{Procedimiento y registro de información}
+
+El estudio experimental compara dos microarquitecturas: un procesador RISC-V RV32IM monociclo y un modelo \textit{pipeline} de cinco etapas. Para cada tratamiento, el procedimiento inicia con el flujo de síntesis completo en Intel Quartus Prime a partir del cual se extraen la frecuencia máxima estimada, el reporte de utilización de recursos y se genera el archivo de configuración. 
+
+Posteriormente, ambas arquitecturas se evalúan mediante una batería de pruebas automatizadas controladas por el entorno de verificación cocotb. Este entorno se encarga de cargar y ejecutar programas representativos sobre el diseño RTL de cada arquitectura, monitorizando y registrando en tiempo de simulación señales internas clave como el número total de ciclos de reloj, la cantidad de instrucciones retiradas, el CPI, el IPC y los eventos de hazards en el caso del pipeline. 
+
+Para garantizar la fiabilidad del estudio, cocotb compara automáticamente los estados finales contra un modelo de referencia en Python, verificando que la ejecución haya sido funcionalmente correcta antes de proceder al análisis de rendimiento. Cada programa se ejecuta en cinco réplicas por tratamiento para minimizar variaciones y asegurar la consistencia experimental.
+
+\subsubsection{Variables de respuesta e independientes}
+
+En esta investigación se registran diversas métricas cuantitativas para evaluar cómo cambia el rendimiento del procesador al emplear una arquitectura monociclo frente a una arquitectura pipelinede cinco etapas. Estas métricas se agrupan en variables de respuesta, variables independientes y variables de control.
+
+Las \textbf{variables de respuesta} son las que permiten medir el desempeño efectivo del procesador en cada tratamiento. Incluyen:
+\begin{itemize}
+    \item El número medio de ciclos por instrucción (CPI).
+    \item El número medio de instrucciones retiradas por ciclo (IPC).
+    \item La capacidad de procesamiento por segundo (throughput), derivada de la combinación de F\textsubscript{max} y CPI.
+    \item La frecuencia máxima alcanzable sin violaciones de temporización (F\textsubscript{max}) reportada por el Timing Analyzer.
+    \item La utilización de recursos de la FPGA.
+    \item La latencia total requerida para ejecutar cada programa de prueba.
+\end{itemize}
+
+Estas mediciones se obtienen a partir de contadores internos integrados en el procesador, de los reportes de síntesis y temporización generados por Intel Quartus Prime y de la instrumentación de verificación y registro implementada con \texttt{cocotb}.
+
+La \textbf{variable independiente principal} es el tipo de microarquitectura implementada. Adicionalmente, los distintos programas de prueba utilizados se consideran como un segundo factor experimental, ya que permiten observar el comportamiento de cada arquitectura bajo diferentes patrones de carga.
+
+Las \textbf{variables de control} son aquellos parámetros que se mantienen constantes para garantizar una comparación justa entre tratamientos. Entre ellas se incluyen: el conjunto de instrucciones, la plataforma hardware, la versión de las herramientas de síntesis y compilación utilizadas, la configuración del entorno de compilación, el conjunto de instrucciones cargado en memoria para cada prueba y la frecuencia de reloj de entrada configurada para la síntesis y la ejecución.
+
+\subsubsection{Criterios para suspensión o replanteamiento del proyecto}
+
+Se establecen criterios explícitos para identificar situaciones en las que la continuación del proyecto, en los términos originalmente definidos, dejaría de ser viable o metodológicamente válida. En tales casos, se considerará la suspensión o el replanteamiento del alcance:
+
+\begin{itemize}
+    \item \textbf{Imposibilidad de síntesis en la FPGA objetivo:} si alguno de los tratamientos no puede ser implementado exitosamente en la tarjeta DE1-SoC debido a que la utilización de recursos supera la capacidad disponible de LUTs, FFs, BRAM o bloques DSP del dispositivo, aun después de aplicar optimizaciones razonables de diseño, no será posible realizar la comparación propuesta y se requerirá redefinir el alcance del proyecto.
+
+    \item \textbf{Corrección funcional no alcanzada:} si, tras un número significativo de iteraciones de depuración, los testbenches basados en cocotb no logran confirmar la corrección funcional del procesador el proyecto no podrá avanzar a la fase de evaluación de rendimiento, dado que cualquier comparación carecería de validez.
+
+    \item \textbf{Inestabilidad en las métricas entre réplicas:} si, después de repetir las mediciones, no se consigue reproducir resultados consistentes entre réplicas para un mismo tratamiento y benchmark, por ejemplo, si el coeficiente de variación del CPI entre las cinco réplicas excede un umbral considerado razonable indicando inestabilidad no explicada o posibles errores no deterministas en el diseño o en el proceso de medición, será necesario revisar en profundidad la metodología y, de no resolverse, reconsiderar el alcance del estudio.
+
+    \item \textbf{Restricciones de tiempo y avance mínimo}: si no se logra completar la implementación básica de ambas microarquitecturas, la verificación funcional y al menos una iteración completa de evaluación de rendimiento con un conjunto representativo de unidades experimentales dentro de los primeros cinco meses del proyecto, se deberá evaluar una reducción o ajuste del alcance, priorizando la obtención de resultados parciales válidos antes que mantener un objetivo irrealizable.
+\end{itemize}
+
+\subsubsection{Análisis y evaluación de la hipótesis}
+
+La evaluación de la hipótesis se basa en el análisis de las variables de respuesta obtenidas para cada tratamiento: CPI, IPC, throughput y frecuencia máxima. Estas variables permiten caracterizar el rendimiento de ambas arquitecturas y constituyen la base para determinar si la microarquitectura pipeline ofrece mejoras cuantificables frente al diseño monociclo.
+
+El análisis comienza con una etapa descriptiva, en la que se resumen las mediciones de cada tratamiento mediante medidas de tendencia central y dispersión para cada benchmark y arquitectura. Esta etapa permite identificar patrones generales, variabilidad entre réplicas y posibles valores atípicos que pudieran influir en la interpretación de los resultados.
+
+Dado el tamaño muestral reducido por combinación de tratamiento y caso de prueba, el énfasis se pone en la comparación de medias y en el cálculo de métricas derivadas, más que en la aplicación extensiva de pruebas de significancia. No obstante, cuando resulte pertinente, se podrán emplear pruebas estadísticas sencillas como apoyo a la interpretación, siempre dejando claro el tamaño de la muestra y las limitaciones asociadas.
+
+Además de la comparación directa de medias, se calcula el speedup del pipeline respecto al monociclo en términos de throughput, así como indicadores de eficiencia relativa que relacionan el rendimiento obtenido con los recursos de FPGA utilizados y el overhead de recursos del pipeline frente al diseño monociclo. Estas métricas permiten evaluar el trade-off entre rendimiento y costo en hardware y aportan una base más completa para valorar si la mejora observada en throughput y F\textsubscript{max} justifica la complejidad adicional de la arquitectura pipeline.
+
+\subsubsection{Evaluación de la hipótesis de trabajo}
+
+\textbf{Hipótesis de investigación (H\textsubscript{1}).} La implementación de una microarquitectura RISC-V RV32IM segmentada en cinco etapas sobre FPGA ofrece un rendimiento superior, en términos de throughput, respecto a un procesador monociclo equivalente, bajo condiciones controladas de síntesis, verificación y ejecución, manteniendo en ambos casos la corrección funcional.
+
+\textbf{Hipótesis nula (H\textsubscript{0}).} No se observa una mejora de rendimiento en throughput a favor de la arquitectura segmentada frente a la monociclo; es decir, la diferencia de throughput entre ambas microarquitecturas es nula o no favorable al pipeline dentro del margen de variación experimental.
+
+\subsection{Hipótesis}
+La implementación de una microarquitectura RISC-V RV32IM segmentada en cinco etapas sobre FPGA mejora el rendimiento, en términos de throughput y frecuencia, frente a un procesador monociclo equivalente, manteniendo la corrección funcional.
+
+\subsection{Actividades}
+
+\textbf{Objetivo específico 1.} Definir e implementar la microarquitectura pipeline de cinco etapas RV32IM en SystemVerilog.
+
+\textbf{Actividad 1.1.} 
+Diseñar la arquitectura del procesador segmentado, detallando la función e interacción de cada una de las cinco etapas (IF, ID, EX, MEM, WB), los registros interetapa y las señales de control clave, en concordancia con la especificación RV32IM.
+\\
+\textit{Entregable:} Diagrama de bloques funcional y documento descriptivo de la microarquitectura.
+
+\textbf{Actividad 1.2.} 
+Codificar en SystemVerilog cada etapa del pipeline y los módulos auxiliares de forma modular, asegurando una separación clara entre etapas y la correcta implementación de la funcionalidad definida en la actividad anterior.
+\\
+\textit{Entregable:} Código fuente modular en SystemVerilog para la microarquitectura pipeline RV32IM.
+
+\textbf{Actividad 1.3.} 
+Integrar los módulos del procesador segmentado, sintetizar el diseño completo para la FPGA DE1-SoC y realizar una verificación funcional básica que confirme el correcto funcionamiento conjunto de las etapas.
+\\
+\textit{Entregable:} Módulo superior funcional para FPGA y reporte de síntesis inicial con evidencias de operación correcta.
+
+\textbf{Objetivo específico 2.} Desarrollar una visualización básica que permita observar el estado interno del pipeline durante la ejecución del procesador.
+
+\textbf{Actividad 2.1.}
+Definir y seleccionar las señales internas del pipeline que serán expuestas para visualización, así como el medio de salida más adecuado.
+\\
+\textit{Entregable:} Documento breve con un esquema de la visualización propuesta y la lista de señales seleccionadas.
+
+\textbf{Actividad 2.2.}
+Implementar en SystemVerilog el módulo de visualización elegido e integrarlo con el procesador para mostrar en tiempo (casi) real los estados internos seleccionados durante la ejecución de programas de prueba, asegurando que la lógica de visualización no altere la funcionalidad del procesador.
+\\
+\textit{Entregable:} Código funcional del módulo de visualización y evidencia de una sesión real demostrando su uso.
+
+\textbf{Objetivo específico 3.} Verificar la correcta operación del procesador RV32IM mediante testbenches automatizados desarrollados con cocotb, obteniendo además métricas básicas de desempeño.
+
+\textbf{Actividad 3.1.}
+Elaborar un plan mínimo de verificación en cocotb que incluya instrucciones representativas, casos de hazards y al menos una operación por cada tipo de instrucción del conjunto RV32IM.
+\\
+\textit{Entregable:} Lista documentada de casos de prueba, con su clasificación y cobertura sobre el conjunto de instrucciones.
+
+\textbf{Actividad 3.2.}
+Desarrollar y ejecutar testbenches automáticos con cocotb para verificar la funcionalidad del procesador, comparar los resultados con un modelo de referencia y recopilar métricas como CPI, throughput y correctitud funcional frente a los resultados esperados.
+\\
+\textit{Entregable:} Scripts de cocotb, registros de los resultados principales y un breve reporte de la verificación realizada.
+
+
+
+
