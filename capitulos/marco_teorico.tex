@@ -38,10 +38,10 @@ Para asegurar la corrección funcional del diseño segmentado, los autores detal
 \textcite{RISCV2019Manual} presentan la especificación oficial del conjunto de instrucciones RISC-V a nivel de usuario, definiendo formalmente el conjunto base RV32I y las extensiones estándar.
 La obra describe para cada instrucción su semántica precisa, la codificación binaria y el comportamiento observable, estableciendo la referencia de corrección funcional para cualquier implementación compatible.
 
-En la especificación se introduce un conjunto base mínimo (RV32I), con 40 instrucciones suficientes para servir como objetivo de compilador, que puede ampliarse mediante extensiones opcionales identificadas por letras, como la extensión ``M'' para multiplicación y división enteras.[web:180][web:236]
+En la especificación se introduce un conjunto base mínimo (RV32I), con 40 instrucciones suficientes para servir como objetivo de compilador, que puede ampliarse mediante extensiones opcionales identificadas por letras, como la extensión ``M'' para multiplicación y división enteras.
 La extensión estándar ``M'' incorpora ocho instrucciones aritméticas (\texttt{MUL}, \texttt{MULH}, \texttt{MULHU}, \texttt{MULHSU}, \texttt{DIV}, \texttt{DIVU}, \texttt{REM} y \texttt{REMU}), permitiendo que una implementación RV32I se extienda a RV32IM manteniendo la compatibilidad con la semántica definida por la ISA.[web:233][web:241]
 
-Esta especificación es fundamental para el proyecto porque fija el comportamiento observable del procesador RV32IM y sirve como contrato formal tanto para el diseño de la microarquitectura como para la construcción de testbenches de verificación que comparan resultados contra un modelo ISA-correcto.[web:236][web:241]
+Esta especificación es fundamental para el proyecto porque fija el comportamiento observable del procesador RV32IM y sirve como contrato formal tanto para el diseño de la microarquitectura como para la construcción de testbenches de verificación que comparan resultados contra un modelo ISA.
 
 \subsubsection{Métricas de rendimiento en arquitectura de computadores}
 
