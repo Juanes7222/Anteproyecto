@@ -1,13 +1,15 @@
 \section{Aportes}
 
 \begin{itemize}
-   \item \textbf{Repositorio abierto del procesador RV32IM segmentado} \\
-         Código fuente completo en SystemVerilog de un procesador RISC-V RV32IM con microarquitectura segmentada en cinco etapas, publicado en un repositorio público y documentado para su reutilización en contextos académicos y de investigación (docencia de arquitectura, experimentos de rendimiento, extensiones de ISA, etc.).
+   \item \textbf{Evidencia comparativa entre monociclo y pipeline RV32IM en Cyclone V} \\
+   Conjunto de datos experimentales que cuantifica, bajo un protocolo homogéneo de síntesis y medición, la diferencia real en frecuencia máxima, CPI efectivo, throughput y utilización de recursos entre las microarquitecturas monociclo y pipeline de cinco etapas del mismo núcleo RV32IM sobre la FPGA Cyclone V DE1-SoC. Este aporte constituye evidencia replicable frente a una brecha identificada en la literatura, donde no existen comparaciones directas y controladas para este par de arquitecturas en dicha plataforma.
 
-   \item \textbf{Módulo de visualización del pipeline sobre FPGA} \\
-         Módulo de visualización integrado en la FPGA que permite observar, en tiempo casi real, el comportamiento interno del pipeline (PC, registros interetapa, señales de control y detección de hazards), con potencial uso como herramienta docente en cursos de arquitectura de computadores y diseño de procesadores.
+   \item \textbf{Repositorio abierto con implementaciones monociclo y pipeline RV32IM} \\
+   Código fuente completo en SystemVerilog de ambas microarquitecturas, monociclo y pipeline de cinco etapas con resolución de hazards de datos y control, publicado en un repositorio público y documentado para su reutilización en contextos de docencia, extensión de la ISA RISC-V y experimentos de rendimiento posteriores.
 
-   \item \textbf{Conjunto de testbenches automatizados con cocotb} \\
-Conjunto de testbenches automatizados basados en cocotb para la verificación funcional de procesadores RISC-V, que cubren instrucciones RV32IM, casos de hazards y generación de métricas de rendimiento como CPI y throughput, sirviendo como punto de partida reutilizable para otros diseños de núcleos RISC-V.
+   \item \textbf{Suite de verificación cocotb para RV32IM} \\
+   Conjunto de testbenches automatizados desarrollados en cocotb que cubren el conjunto de instrucciones RV32IM completo, incluyendo casos de hazards de datos y control, así como operaciones de la extensión M, utilizando un modelo de referencia en Python. Este aporte sirve como punto de partida reutilizable para la verificación funcional de otros núcleos RISC-V.
 
+   \item \textbf{Módulo de visualización de estados internos del pipeline} \\
+   Módulo implementado en SystemVerilog, integrable en la FPGA DE1-SoC, que permite exponer en tiempo casi real los registros interetapa, señales de control y eventos de hazard durante la ejecución del procesador, con potencial uso como herramienta docente en cursos de arquitectura de computadores.
 \end{itemize}
