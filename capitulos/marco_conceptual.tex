@@ -1,38 +1,38 @@
 \section{Marco conceptual}
 
+
 \subsection{Arquitectura de computadores}
 
-La arquitectura de computadores es la rama de la ingeniería informática que estudia la estructura y el comportamiento interno de los sistemas de procesamiento digital, incluyendo la organización del procesador, la memoria y los dispositivos de entrada/salida, así como la interfaz hardware-software que proporciona el conjunto de instrucciones.\parencite{Patterson2017Computer}
-En particular, describe cómo se organizan el camino de datos, la unidad de control, la jerarquía de memoria y los mecanismos de comunicación con el exterior para ejecutar programas de manera eficiente.\parencite{Patterson2017Computer}
+La arquitectura de computadores es la rama de la ingeniería informática que estudia la estructura y el comportamiento interno de los sistemas de procesamiento digital, incluyendo la organización del procesador, la memoria y los dispositivos de entrada/salida, así como la interfaz hardware-software que proporciona el conjunto de instrucciones. En particular, describe cómo se organizan el camino de datos, la unidad de control, la jerarquía de memoria y los mecanismos de comunicación con el exterior para ejecutar programas de manera eficiente.\parencite{Patterson2017Computer}
 
 En el contexto de este proyecto, la arquitectura determina cómo se estructuran e interconectan los componentes del procesador RISC-V RV32IM implementado en FPGA, tanto en su versión de ciclo único como en la versión segmentada de cinco etapas, condicionando el rendimiento, el uso de recursos y la complejidad de verificación.
 
+
 \subsection{Instruction Set Architecture (ISA)}
 
-La Instruction Set Architecture (ISA) es el conjunto formal de instrucciones, formatos de codificación binaria, comportamiento semántico y modelo de programación que un procesador expone al software.\parencite{RISCV2019Manual,Patterson2017Computer}
-Actúa como interfaz entre hardware y software para compiladores, sistemas operativos y programadores, definiendo qué operaciones puede ejecutar el procesador, qué registros y modos de direccionamiento están disponibles y cómo se representan los datos, pero no cómo se implementan internamente estas operaciones.\parencite{RISCV2019Manual}
+La Instruction Set Architecture (ISA) es el conjunto formal de instrucciones, formatos de codificación binaria, comportamiento semántico y modelo de programación que un procesador expone al software. Actúa como interfaz entre hardware y software para compiladores, sistemas operativos y programadores, definiendo qué operaciones puede ejecutar el procesador, qué registros y modos de direccionamiento están disponibles y cómo se representan los datos, pero no cómo se implementan internamente estas operaciones.\parencite{RISCV2019Manual,Patterson2017Computer}
 
 Es fundamental distinguir entre ISA y microarquitectura:
 \begin{itemize}
-  \item \textbf{ISA (qué):} Especifica el conjunto de instrucciones, los registros visibles al programador, el formato de codificación y la semántica de cada operación. Por ejemplo, la ISA RV32IM define una instrucción \texttt{MUL rd, rs1, rs2} que multiplica los contenidos de \texttt{rs1} y \texttt{rs2} y almacena el resultado en \texttt{rd}.\parencite{RISCV2019Manual}
-  \item \textbf{Microarquitectura (cómo):} Describe la organización interna del procesador que implementa esa ISA: estructura del datapath, presencia o no de pipeline, número y tipo de unidades funcionales, técnicas de forwarding, manejo de hazards, etc. Diferentes microarquitecturas pueden ejecutar la misma ISA con trade-offs distintos de rendimiento, área y consumo.\parencite{Patterson2017Computer}
+  \item \textbf{ISA (qué):} Especifica el conjunto de instrucciones, los registros visibles al programador, el formato de codificación y la semántica de cada operación. Por ejemplo, la ISA RV32IM define una instrucción \texttt{MUL rd, rs1, rs2} que multiplica los contenidos de \texttt{rs1} y \texttt{rs2} y almacena el resultado en \texttt{rd}.
+  \item \textbf{Microarquitectura (cómo):} Describe la organización interna del procesador que implementa esa ISA: estructura del datapath, presencia o no de pipeline, número y tipo de unidades funcionales, técnicas de forwarding, manejo de hazards, etc. Diferentes microarquitecturas pueden ejecutar la misma ISA con trade-offs distintos de rendimiento, área y consumo.
 \end{itemize}
+
 
 \subsection{RISC-V y extensión M (RV32IM)}
 
 \subsubsection{RISC-V como arquitectura abierta}
 
-RISC-V es una arquitectura de conjunto de instrucciones abierta, libre de regalías y modular, basada en principios RISC, que define un conjunto base mínimo y un conjunto de extensiones estándar que se pueden combinar según las necesidades de cada implementación.\parencite{RISCV2019Manual}
-Para enteros de 32 bits, el conjunto base RV32I ofrece 47 instrucciones distintas que abarcan operaciones aritméticas y lógicas, cargas y almacenamientos, comparaciones y control de flujo, y está diseñado para ser suficiente como objetivo de compilador en sistemas operativos modernos.\parencite{RISCV2019Manual}
+RISC-V es una arquitectura de conjunto de instrucciones abierta, libre de regalías y modular, basada en principios RISC, que define un conjunto base mínimo y un conjunto de extensiones estándar que se pueden combinar según las necesidades de cada implementación. Para enteros de 32 bits, el conjunto base RV32I ofrece 47 instrucciones distintas que abarcan operaciones aritméticas y lógicas, cargas y almacenamientos, comparaciones y control de flujo, y está diseñado para ser suficiente como objetivo de compilador en sistemas operativos modernos.\parencite{RISCV2019Manual}
 
-Sobre este núcleo se definen extensiones opcionales identificadas por letras, como la extensión M para multiplicación y división enteras, la extensión A para operaciones atómicas, las extensiones F y D para punto flotante en simple y doble precisión, y la extensión C para instrucciones comprimidas de 16 bits, entre otras.\parencite{RISCV2019Manual}
+Sobre este núcleo se definen extensiones opcionales identificadas por letras, como la extensión M para multiplicación y división enteras, la extensión A para operaciones atómicas, las extensiones F y D para punto flotante en simple y doble precisión, y la extensión C para instrucciones comprimidas de 16 bits, entre otras.
+
 
 \subsubsection{Configuración RV32IM empleada en el proyecto}
 
-La configuración RV32IM combina el conjunto base entero RV32I con la extensión estándar M de multiplicación y división.\parencite{RISCV2019Manual}
-En RV32I se incluyen, entre otras, instrucciones aritméticas y lógicas sobre registros (por ejemplo, \texttt{ADD}, \texttt{SUB}, \texttt{AND}, \texttt{OR}, \texttt{XOR}), desplazamientos (\texttt{SLL}, \texttt{SRL}, \texttt{SRA}), comparaciones (\texttt{SLT}, \texttt{SLTU}), cargas y almacenamientos de distintos tamaños (\texttt{LB}, \texttt{LH}, \texttt{LW}, \texttt{SB}, \texttt{SH}, \texttt{SW}), saltos condicionales (\texttt{BEQ}, \texttt{BNE}, \texttt{BLT}, \texttt{BGE}), saltos incondicionales (\texttt{JAL}, \texttt{JALR}) y operaciones inmediatas como \texttt{ADDI}, \texttt{ANDI} u \texttt{ORI}.\parencite{RISCV2019Manual}
+La configuración RV32IM combina el conjunto base entero RV32I con la extensión estándar M de multiplicación y división. En RV32I se incluyen, entre otras, instrucciones aritméticas y lógicas sobre registros (por ejemplo, \texttt{ADD}, \texttt{SUB}, \texttt{AND}, \texttt{OR}, \texttt{XOR}), desplazamientos (\texttt{SLL}, \texttt{SRL}, \texttt{SRA}), comparaciones (\texttt{SLT}, \texttt{SLTU}), cargas y almacenamientos de distintos tamaños (\texttt{LB}, \texttt{LH}, \texttt{LW}, \texttt{SB}, \texttt{SH}, \texttt{SW}), saltos condicionales (\texttt{BEQ}, \texttt{BNE}, \texttt{BLT}, \texttt{BGE}), saltos incondicionales (\texttt{JAL}, \texttt{JALR}) y operaciones inmediatas como \texttt{ADDI}, \texttt{ANDI} u \texttt{ORI}.\parencite{RISCV2019Manual}
 
-La extensión M añade ocho instrucciones de multiplicación y división de enteros, definidas para operandos de ancho XLEN (32 bits en RV32): \texttt{MUL}, \texttt{MULH}, \texttt{MULHU}, \texttt{MULHSU}, \texttt{DIV}, \texttt{DIVU}, \texttt{REM} y \texttt{REMU}.\parencite{RISCV2019Manual}
+La extensión M añade ocho instrucciones de multiplicación y división de enteros, definidas para operandos de ancho XLEN (32 bits en RV32): \texttt{MUL}, \texttt{MULH}, \texttt{MULHU}, \texttt{MULHSU}, \texttt{DIV}, \texttt{DIVU}, \texttt{REM} y \texttt{REMU}.
 \begin{itemize}
   \item \texttt{MUL rd, rs1, rs2}: realiza una multiplicación entero por entero y escribe en \texttt{rd} los XLEN bits menos significativos del producto.
   \item \texttt{MULH}, \texttt{MULHU} y \texttt{MULHSU}: devuelven los XLEN bits más significativos del producto para combinaciones signed×signed, unsigned×unsigned y signed×unsigned, respectivamente.
@@ -40,12 +40,12 @@ La extensión M añade ocho instrucciones de multiplicación y división de ente
   \item \texttt{REM}, \texttt{REMU}: proporcionan el resto de la división correspondiente, con reglas específicas para división por cero y casos de overflow.
 \end{itemize}
 
+
 \subsection{Pipeline de procesadores}
 
 \subsubsection{Definición y etapas}
 
-El pipeline es una técnica de organización microarquitectural que divide la ejecución de instrucciones en etapas secuenciales, de modo que varias instrucciones puedan encontrarse simultáneamente en distintas fases de ejecución, explotando paralelismo temporal para aumentar el throughput del procesador.\parencite{Patterson2017Computer,Harris2021Digital}
-En una arquitectura RISC clásica de cinco etapas, habitual en diseños MIPS y RISC-V, las fases son: búsqueda de instrucción, decodificación, ejecución, acceso a memoria y escritura de resultados.\parencite{Patterson2017Computer,Ch6Pipeline2003}
+El pipeline es una técnica de organización microarquitectural que divide la ejecución de instrucciones en etapas secuenciales, de modo que varias instrucciones puedan encontrarse simultáneamente en distintas fases de ejecución, explotando paralelismo temporal para aumentar el throughput del procesador. En una arquitectura RISC clásica de cinco etapas, habitual en diseños MIPS y RISC-V, las fases son: búsqueda de instrucción, decodificación, ejecución, acceso a memoria y escritura de resultados.\parencite{Patterson2017Computer,Harris2021Digital}
 
 Las etapas típicas de un pipeline de cinco niveles son:
 \begin{itemize}
@@ -56,7 +56,8 @@ Las etapas típicas de un pipeline de cinco niveles son:
   \item \textbf{WB (Write Back):} Escritura del resultado en el banco de registros para las instrucciones que actualizan un registro destino.
 \end{itemize}
 
-Entre cada par de etapas se insertan registros interetapa que almacenan señales de datos y de control de una instrucción mientras avanza por el pipeline, aislando temporalmente las etapas y permitiendo que cada una opere sobre una instrucción diferente en cada ciclo.\parencite{Patterson2017Computer}
+Entre cada par de etapas se insertan registros interetapa que almacenan señales de datos y de control de una instrucción mientras avanza por el pipeline, aislando temporalmente las etapas y permitiendo que cada una opere sobre una instrucción diferente en cada ciclo.
+
 
 \subsubsection{Ecuación de rendimiento y comparación monociclo vs.\ pipeline}
 
@@ -71,97 +72,92 @@ A partir de esta relación, el throughput puede escribirse como:
 \]
 donde \(f_{\text{reloj}} = 1/T_{\text{ciclo}}\) es la frecuencia de reloj e IPC es el número medio de instrucciones completadas por ciclo.
 
-En un procesador monociclo, el CPI ideal es igual a 1, ya que cada instrucción se completa en un solo ciclo, pero el tiempo de ciclo debe dimensionarse según el camino crítico más largo, que normalmente incluye todas las operaciones necesarias para la instrucción más lenta del conjunto.
-En un procesador con pipeline de cinco etapas, el objetivo es mantener un CPI cercano a 1 en ausencia de hazards, mientras que el tiempo de ciclo se reduce al estar limitado por la etapa individual más lenta en lugar de por toda la ruta de datos combinacional, lo que permite aumentar la frecuencia y, por tanto, el throughput efectivo.\parencite{Patterson2017Computer}
+En un procesador monociclo, el CPI ideal es igual a 1, ya que cada instrucción se completa en un solo ciclo, pero el tiempo de ciclo debe dimensionarse según el camino crítico más largo, que normalmente incluye todas las operaciones necesarias para la instrucción más lenta del conjunto. En un procesador con pipeline de cinco etapas, el objetivo es mantener un CPI cercano a 1 en ausencia de hazards, mientras que el tiempo de ciclo se reduce al estar limitado por la etapa individual más lenta en lugar de por toda la ruta de datos combinacional, lo que permite aumentar la frecuencia y, por tanto, el throughput efectivo.
 
-En la práctica, los hazards de datos, de control y estructurales incrementan el CPI por encima del ideal y reducen la ganancia teórica frente al monociclo, de modo que los incrementos observados de throughput suelen situarse entre un factor aproximado de 2 y 4 para pipelines de cinco etapas bien diseñados, según la carga de trabajo y las técnicas de resolución de hazards aplicadas.
-En este proyecto, la hipótesis de trabajo es que la microarquitectura pipeline RV32IM implementada en FPGA alcanzará un throughput superior al del diseño monociclo correspondiente, gracias a una frecuencia de operación más alta que compense el posible aumento de CPI debido a los hazards.
+En la práctica, los hazards de datos, de control y estructurales incrementan el CPI por encima del ideal y reducen la ganancia teórica frente al monociclo, de modo que los incrementos observados de throughput suelen situarse entre un factor aproximado de 2 y 4 para pipelines de cinco etapas bien diseñados, según la carga de trabajo y las técnicas de resolución de hazards aplicadas. En este proyecto, la hipótesis de trabajo es que la microarquitectura pipeline RV32IM implementada en FPGA alcanzará un throughput superior al del diseño monociclo correspondiente, gracias a una frecuencia de operación más alta que compense el posible aumento de CPI debido a los hazards.
+
 
 \subsection{Hazards en pipelines de procesadores}
 
 Los hazards son situaciones que impiden la progresión ideal del pipeline y obligan a introducir mecanismos de detección y resolución para mantener la corrección funcional; su efecto es aumentar el CPI efectivo al provocar ciclos de espera o vaciados parciales del pipeline.\parencite{Patterson2017Computer,Harris2021Digital}
 
+
 \subsubsection{Tipos de hazards}
 
 \paragraph{Hazards de datos}
 
-Un hazard de datos aparece cuando una instrucción necesita un operando que todavía no ha sido escrito en el banco de registros por una instrucción previa, lo que puede ocurrir con dependencias verdaderas de tipo read-after-write (RAW).
-En pipelines sencillos in-order, las dependencias write-after-read (WAR) y write-after-write (WAW) no se manifiestan, ya que las escrituras y lecturas se ordenan de manera determinista.\parencite{Patterson2017Computer}
+Un hazard de datos aparece cuando una instrucción necesita un operando que todavía no ha sido escrito en el banco de registros por una instrucción previa, lo que puede ocurrir con dependencias verdaderas de tipo read-after-write (RAW). En pipelines sencillos in-order, las dependencias write-after-read (WAR) y write-after-write (WAW) no se manifiestan, ya que las escrituras y lecturas se ordenan de manera determinista.\parencite{Patterson2017Computer}
 
-Entre las técnicas de resolución, el forwarding, o bypassing, permite reenviar resultados desde etapas posteriores del pipeline, como EX/MEM o MEM/WB, directamente a las entradas de la ALU, evitando esperar a que el valor sea escrito en el banco de registros.
-Cuando el reenvío no es suficiente, por ejemplo en ciertos patrones de load-use, la unidad de detección de hazards inserta burbujas mediante stalling hasta que el dato está disponible, manteniendo la corrección funcional a costa de un aumento del CPI.\parencite{Patterson2017Computer,Mnaaoui2018Pipeline}
+Entre las técnicas de resolución, el forwarding, o bypassing, permite reenviar resultados desde etapas posteriores del pipeline, como EX/MEM o MEM/WB, directamente a las entradas de la ALU, evitando esperar a que el valor sea escrito en el banco de registros. Cuando el reenvío no es suficiente, por ejemplo en ciertos patrones de load-use, la unidad de detección de hazards inserta burbujas mediante stalling hasta que el dato está disponible, manteniendo la corrección funcional a costa de un aumento del CPI.\parencite{Najjar2018Pipeline}
+
 
 \paragraph{Hazards estructurales}
 
-Los hazards estructurales se producen cuando dos o más instrucciones intentan usar simultáneamente un recurso hardware que no puede atenderlas a la vez, como una memoria o una unidad funcional compartida.
-Una forma habitual de evitarlos en procesadores RISC es emplear arquitecturas de tipo Harvard con memorias separadas de instrucciones y datos, reduciendo la probabilidad de conflicto entre la etapa IF y la etapa MEM; alternativamente, se pueden introducir mecanismos de arbitraje o stalling cuando el recurso está ocupado.\parencite{Patterson2017Computer,Chu2011FPGA}
+Los hazards estructurales se producen cuando dos o más instrucciones intentan usar simultáneamente un recurso hardware que no puede atenderlas a la vez, como una memoria o una unidad funcional compartida. Una forma habitual de evitarlos en procesadores RISC es emplear arquitecturas de tipo Harvard con memorias separadas de instrucciones y datos, reduciendo la probabilidad de conflicto entre la etapa IF y la etapa MEM; alternativamente, se pueden introducir mecanismos de arbitraje o stalling cuando el recurso está ocupado.\parencite{Chu2011FPGA}
+
 
 \paragraph{Hazards de control}
 
-Los hazards de control aparecen cuando el flujo de instrucciones depende del resultado de un salto o branch que aún no se ha resuelto, de modo que las instrucciones ya presentes en el pipeline pueden no pertenecer al camino correcto de ejecución.
-Si no se aplica ninguna técnica de mitigación, la resolución de un salto puede requerir descartar varias instrucciones ya en el pipeline, introduciendo una penalización en ciclos cada vez que se toma un branch.\parencite{Patterson2017Computer,Harris2021Digital}
+Los hazards de control aparecen cuando el flujo de instrucciones depende del resultado de un salto o branch que aún no se ha resuelto, de modo que las instrucciones ya presentes en el pipeline pueden no pertenecer al camino correcto de ejecución. Si no se aplica ninguna técnica de mitigación, la resolución de un salto puede requerir descartar varias instrucciones ya en el pipeline, introduciendo una penalización en ciclos cada vez que se toma un branch.\parencite{Patterson2017Computer,Harris2021Digital}
 
-Para reducir este efecto, se emplean técnicas como la predicción de saltos, como por ejemplo, esquemas sencillos de \emph{predict-not-taken} o predictores basados en contadores de saturación, así como la resolución temprana de branches en etapas anteriores del pipeline, con el objetivo de minimizar el número de ciclos perdidos por saltos mal predichos.\parencite{Patterson2017Computer,Mnaaoui2018Pipeline}
+Para reducir este efecto, se emplean técnicas como la predicción de saltos, como por ejemplo, esquemas sencillos de \emph{predict-not-taken} o predictores basados en contadores de saturación, así como la resolución temprana de branches en etapas anteriores del pipeline, con el objetivo de minimizar el número de ciclos perdidos por saltos mal predichos.\parencite{Najjar2018Pipeline}
 
 En ISAs modernas como RISC-V no se utilizan \emph{branch delay slots}, a diferencia de lo que ocurría en algunos diseños MIPS clásicos, de modo que la lógica de control del pipeline debe encargarse explícitamente de anular las instrucciones especulativas cuando la predicción es incorrecta.\parencite{RISCV2019Manual}
 
+
 \subsubsection{Impacto de los hazards en el CPI}
 
-Desde el punto de vista del rendimiento, los hazards elevan el CPI efectivo por encima del valor ideal de 1, al introducir ciclos adicionales en los que el pipeline no completa nuevas instrucciones.
-Sin técnicas de resolución, la frecuencia de stalls y vaciados puede hacer que la ganancia de throughput respecto a un diseño monociclo se reduzca de forma significativa o incluso se anule en ciertos patrones de ejecución.\parencite{Patterson2017Computer}
 
-La literatura muestra que la combinación de forwarding bien diseñado, stalling selectivo y un tratamiento cuidadoso de los saltos permite mantener el CPI relativamente próximo a 1 para muchas cargas de trabajo, preservando las ventajas del pipeline respecto al monociclo, especialmente cuando se acompaña de una frecuencia de reloj superior.\parencite{Mnaaoui2018Pipeline,IJACSA2024Performance}
+Desde el punto de vista del rendimiento, los hazards elevan el CPI efectivo por encima del valor ideal de 1, al introducir ciclos adicionales en los que el pipeline no completa nuevas instrucciones. Sin técnicas de resolución, la frecuencia de stalls y vaciados puede hacer que la ganancia de throughput respecto a un diseño monociclo se reduzca de forma significativa o incluso se anule en ciertos patrones de ejecución.\parencite{Patterson2017Computer}
+
+La literatura muestra que la combinación de forwarding bien diseñado, stalling selectivo y un tratamiento cuidadoso de los saltos permite mantener el CPI relativamente próximo a 1 para muchas cargas de trabajo, preservando las ventajas del pipeline respecto al monociclo, especialmente cuando se acompaña de una frecuencia de reloj superior.\parencite{Najjar2018Pipeline,Yi2020CPI}
+
 
 \subsubsection{Field-Programmable Gate Array (FPGA)}
 
-Una FPGA es un circuito integrado reprogramable por el usuario tras la fabricación, formado por bloques lógicos configurables, recursos de memoria embebida y una red de interconexión programable.
-Estos dispositivos permiten implementar arquitecturas digitales complejas, como procesadores, a partir de descripciones en lenguajes de hardware y herramientas de síntesis y place\&route.\parencite{Chu2011FPGA,MITFPGA2010}
+Una FPGA es un circuito integrado reprogramable por el usuario tras la fabricación, formado por bloques lógicos configurables, recursos de memoria embebida y una red de interconexión programable. Estos dispositivos permiten implementar arquitecturas digitales complejas, como procesadores, a partir de descripciones en lenguajes de hardware y herramientas de síntesis y place\&route.\parencite{Chu2011FPGA}
+
 
 \subsubsection{Componentes FPGA relevantes}
 
 Desde el punto de vista de este proyecto, los recursos más relevantes de una FPGA son:
 \begin{itemize}
-  \item \textbf{LUTs (Look-Up Tables):} Bloques lógicos configurables que implementan funciones booleanas de varias entradas; el número disponible condiciona la capacidad lógica total del dispositivo.\parencite{Chu2011FPGA}
-  \item \textbf{Flip-flops (FFs):} Elementos de almacenamiento secuencial utilizados para registrar señales y construir registros y máquinas de estados; los pipelines tienden a requerir más flip-flops que los diseños monociclo debido a los registros interetapa.\parencite{Chu2011FPGA}
-  \item \textbf{Memoria embebida (Block RAM):} Bloques de memoria dedicados utilizados para implementar memorias de instrucciones, de datos y estructuras como bancos de registros de forma más eficiente que con LUTs.\parencite{MITFPGA2010}
+  \item \textbf{LUTs (Look-Up Tables):} Bloques lógicos configurables que implementan funciones booleanas de varias entradas; el número disponible condiciona la capacidad lógica total del dispositivo.
+  \item \textbf{Flip-flops (FFs):} Elementos de almacenamiento secuencial utilizados para registrar señales y construir registros y máquinas de estados; los pipelines tienden a requerir más flip-flops que los diseños monociclo debido a los registros interetapa.
+  \item \textbf{Memoria embebida (Block RAM):} Bloques de memoria dedicados utilizados para implementar memorias de instrucciones, de datos y estructuras como bancos de registros de forma más eficiente que con LUTs.\parencite{intel2016cyclone}
   \item \textbf{Bloques DSP:} Unidades aritméticas dedicadas, optimizadas para operaciones de multiplicación y acumulación, que resultan especialmente útiles para implementar de forma eficiente instrucciones de la extensión M de RISC-V.\parencite{intel2018variable}
 \end{itemize}
 
+
 \subsubsection{FPGA DE1-SoC (Cyclone V 5CSEMA5F31C6)}
 
-La placa DE1-SoC emplea un dispositivo Intel Cyclone V SoC modelo 5CSEMA5F31C6, que integra lógica programable y un subsistema de procesador ARM Cortex-A9.\parencite{intel2016cyclone,terasicDE1SoC}
-Según las especificaciones del fabricante, este dispositivo ofrece aproximadamente 85\,000 elementos lógicos programables, 4\,450~Kbits de memoria embebida y bloques especializados para operaciones DSP.\parencite{terasicDE1SoC,intel2016cyclone}
+La placa DE1-SoC emplea un dispositivo Intel Cyclone V SoC modelo 5CSEMA5F31C6, que integra lógica programable y un subsistema de procesador ARM Cortex-A9. Según las especificaciones del fabricante, este dispositivo ofrece aproximadamente 85\,000 elementos lógicos programables, 4\,450~Kbits de memoria embebida y bloques especializados para operaciones DSP.\parencite{terasicDE1SoC,intel2016cyclone}
 Estos recursos permiten implementar procesadores suaves (softcores) como el RISC-V RV32IM junto con las memorias de instrucciones y datos necesarias en el propio tejido de la FPGA.
 
-En este proyecto se utiliza el flujo de diseño proporcionado por Intel Quartus Prime para sintetizar, implementar y analizar las versiones monociclo y pipeline del procesador sobre la FPGA de la DE1-SoC, aprovechando los informes de utilización de recursos y de frecuencia máxima para cuantificar el uso de LUTs, registros, memoria y bloques DSP.\parencite{Chu2011FPGA,intel2016cyclone}
+En este proyecto se utiliza el flujo de diseño proporcionado por Intel Quartus Prime para sintetizar, implementar y analizar las versiones monociclo y pipeline del procesador sobre la FPGA de la DE1-SoC, aprovechando los informes de utilización de recursos y de frecuencia máxima para cuantificar el uso de LUTs, registros, memoria y bloques DSP.\parencite{intel2016cyclone}
 
 
 \subsection{SystemVerilog y diseño RTL}
 
-SystemVerilog es un lenguaje de descripción de hardware que unifica capacidades de diseño, especificación y verificación, extendiendo Verilog con tipos de datos más ricos, mecanismos orientados a objetos y construcciones específicas para verificación como assertions y cobertura.
-El estándar IEEE~1800-2017 define la sintaxis y semántica de SystemVerilog, e indica que el lenguaje soporta modelado de hardware a nivel comportamental, de transferencia de registros (RTL) y de puertas, así como la escritura de testbenches con técnicas de verificación avanzada.\parencite{IEEE2017SystemVerilog}
+SystemVerilog es un lenguaje de descripción de hardware que unifica capacidades de diseño, especificación y verificación, extendiendo Verilog con tipos de datos más ricos, mecanismos orientados a objetos y construcciones específicas para verificación como assertions y cobertura. El estándar IEEE~1800-2017 define la sintaxis y semántica de SystemVerilog, e indica que el lenguaje soporta modelado de hardware a nivel comportamental, de transferencia de registros (RTL) y de puertas, así como la escritura de testbenches con técnicas de verificación avanzada.\parencite{IEEE2017SystemVerilog}
+
 
 \subsubsection{Nivel RTL}
 
-En el nivel de transferencia de registros (RTL), el diseño se describe en términos de registros y de las transferencias de datos entre ellos sincronizadas por señales de reloj, especificando el comportamiento ciclo a ciclo sin detallar la implementación física a nivel de puertas individuales.
-Este nivel de abstracción es el habitual para describir procesadores y otros bloques complejos de hardware digital, ya que permite capturar claramente el datapath, la unidad de control y las interfaces, manteniendo la compatibilidad con las herramientas de síntesis para FPGA y ASIC.\parencite{Chu2011FPGA}
+En el nivel de transferencia de registros (RTL), el diseño se describe en términos de registros y de las transferencias de datos entre ellos sincronizadas por señales de reloj, especificando el comportamiento ciclo a ciclo sin detallar la implementación física a nivel de puertas individuales. Este nivel de abstracción es el habitual para describir procesadores y otros bloques complejos de hardware digital, ya que permite capturar claramente el datapath, la unidad de control y las interfaces, manteniendo la compatibilidad con las herramientas de síntesis para FPGA y ASIC.\parencite{Chu2011FPGA}
+
 
 \subsubsection{Proceso de síntesis sobre FPGA}
 
-El flujo típico de implementación de un diseño RTL en FPGA consta de varias etapas.
-En primer lugar, el comportamiento del procesador se describe mediante código SystemVerilog a nivel RTL, incluyendo el camino de datos y la lógica de control para las versiones monociclo y pipeline del núcleo RV32IM.\parencite{Chu2011FPGA}
-\newline
-A continuación, la herramienta de síntesis traduce la descripción RTL a una netlist de recursos específicos de la FPGA, como LUTs, flip-flops, bloques de memoria y bloques DSP, aplicando optimizaciones según las restricciones de tiempo y área.
+El flujo típico de implementación de un diseño RTL en FPGA consta de varias etapas. En primer lugar, el comportamiento del procesador se describe mediante código SystemVerilog a nivel RTL, incluyendo el camino de datos y la lógica de control para las versiones monociclo y pipeline del núcleo RV32IM. A continuación, la herramienta de síntesis traduce la descripción RTL a una netlist de recursos específicos de la FPGA, como LUTs, flip-flops, bloques de memoria y bloques DSP, aplicando optimizaciones según las restricciones de tiempo y área.\parencite{Chu2011FPGA}
 
-Posteriormente, las fases de place \& route colocan físicamente los recursos lógicos en el dispositivo y determinan las rutas de interconexión entre ellos, respetando las restricciones de temporización establecidas por el diseñador.\parencite{intel2016cyclone}
+Posteriormente, las fases de place \& route colocan físicamente los recursos lógicos en el dispositivo y determinan las rutas de interconexión entre ellos, respetando las restricciones de temporización establecidas por el diseñador. Finalmente, el análisis estático de temporización (Static Timing Analysis, STA) evalúa todos los caminos de datos relevantes y calcula la frecuencia máxima de operación \(f_{\text{max}}\) que el diseño puede alcanzar sin violar las restricciones de tiempo de establecimiento y hold, proporcionando una medida objetiva del límite de frecuencia para cada implementación.\parencite{IEEE2017SystemVerilog,intel2016cyclone}
 
-Finalmente, el análisis estático de temporización (Static Timing Analysis, STA) evalúa todos los caminos de datos relevantes y calcula la frecuencia máxima de operación \(f_{\text{max}}\) que el diseño puede alcanzar sin violar las restricciones de tiempo de establecimiento y hold, proporcionando una medida objetiva del límite de frecuencia para cada implementación.\parencite{IEEE2017SystemVerilog,intel2016cyclone}
 
 \subsection{Verificación funcional y suites de prueba}
 
 \subsubsection{riscv-tests como suite de conformidad}
 
-La suite riscv-tests, mantenida por la comunidad RISC-V, proporciona conjuntos de pruebas dirigidos para verificar la conformidad de implementaciones de la ISA a nivel de instrucciones.
-Incluye, entre otros, grupos de tests para el conjunto base entero en modo usuario y para la extensión M de multiplicación y división, implementados como programas en ensamblador que ejercitan sistemáticamente las instrucciones correspondientes.\parencite{riscvTestsRepo}
+La suite riscv-tests, mantenida por la comunidad RISC-V, proporciona conjuntos de pruebas dirigidos para verificar la conformidad de implementaciones de la ISA a nivel de instrucciones. Incluye, entre otros, grupos de tests para el conjunto base entero en modo usuario y para la extensión M de multiplicación y división, implementados como programas en ensamblador que ejercitan sistemáticamente las instrucciones correspondientes.\parencite{RISCVFoundation2019}
 
-Cada test ejecuta una secuencia de instrucciones y almacena resultados en ubicaciones de memoria o registros previamente acordadas; el test se considera superado si, al finalizar la ejecución, estos valores coinciden con los resultados esperados definidos en el propio código de prueba.\parencite{riscvTestsRepo,AboutRiscvTesting}
+Cada test ejecuta una secuencia de instrucciones y almacena resultados en ubicaciones de memoria o registros previamente acordadas; el test se considera superado si, al finalizar la ejecución, estos valores coinciden con los resultados esperados definidos en el propio código de prueba.\parencite{lowRISC2019}
