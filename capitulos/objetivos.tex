@@ -3,13 +3,17 @@
 \label{sec:objetivos}
 
 \subsection{Objetivo General}
- Desarrollar en FPGA una microarquitectura RISC-V RV32IM segmentada en cinco etapas, acompañada de una pantalla que permita la visualización paso a paso de los estados internos del pipeline.
+Determinar en qué medida la microarquitectura RISC-V RV32IM segmentada en cinco etapas mejora el rendimiento respecto a su equivalente monociclo, bajo condiciones experimentales controladas sobre la FPGA Cyclone V DE1-SoC.
 
 \subsection{Objetivos Específicos}
 \begin{enumerate}
 
-\item Definir la microarquitectura pipeline de cinco etapas (IF, ID, EX, MEM, WB) y su especificación en SystemVerilog con módulos claramente separados.
-\item Desarrollar un emulador que muestre en tiempo real los registros interetapa, señales de control, PC y traza de instrucciones, ejecución continua orientadas al uso docente.
-\item Construir un conjunto de testbenches y un banco de pruebas que verifiquen funcionalmente el conjunto RV32IM, incluyendo casos de hazards, saltos y operaciones M.
+\item Desarrollar en SystemVerilog las microarquitecturas RV32IM monociclo y pipeline de cinco etapas con resolución de hazards de datos y control.
+
+\item Verificar la corrección funcional de ambas implementaciones mediante la suite riscv-tests y testbenches cocotb, cubriendo el conjunto RV32IM completo.
+
+\item Comparar experimentalmente ambas microarquitecturas midiendo frecuencia máxima, CPI efectivo, throughput y utilización de recursos sobre la DE1-SoC.
+
+\item Desarrollar un módulo de visualización de los estados internos del pipeline sobre la DE1-SoC como contribución al uso docente en el curso de arquitectura de computadores.
 
 \end{enumerate}
