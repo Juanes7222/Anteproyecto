@@ -101,47 +101,65 @@ La implementación de una microarquitectura RISC-V RV32IM segmentada en cinco et
 
 \subsection{Actividades}
 
-\textbf{Objetivo específico 1.} Definir e implementar la microarquitectura pipeline de cinco etapas RV32IM en SystemVerilog.
+\textbf{Objetivo específico 1.} Desarrollar en SystemVerilog las microarquitecturas RV32IM monociclo y pipeline de cinco etapas con resolución de hazards de datos y control.
 
-\textbf{Actividad 1.1.} 
-Diseñar la arquitectura del procesador segmentado, detallando la función e interacción de cada una de las cinco etapas (IF, ID, EX, MEM, WB), los registros interetapa y las señales de control clave, en concordancia con la especificación RV32IM.
+\textbf{Actividad 1.1.}
+Diseñar la microarquitectura monociclo RV32IM, definiendo el camino de datos completo que incluya ALU, banco de registros, memoria de instrucciones y memoria de datos, así como la unidad de control y las señales internas necesarias, en concordancia con la especificación RV32IM.
 \\
-\textit{Entregable:} Diagrama de bloques funcional y documento descriptivo de la microarquitectura.
+\textit{Entregable:} Diagrama de bloques funcional y documento descriptivo de la microarquitectura monociclo.
 
-\textbf{Actividad 1.2.} 
-Codificar en SystemVerilog cada etapa del pipeline y los módulos auxiliares de forma modular, asegurando una separación clara entre etapas y la correcta implementación de la funcionalidad definida en la actividad anterior.
+\textbf{Actividad 1.2.}
+Codificar en SystemVerilog la microarquitectura monociclo de forma modular, sintetizar el diseño en Quartus Prime para la FPGA DE1-SoC y confirmar su operación básica mediante simulación funcional.
 \\
-\textit{Entregable:} Código fuente modular en SystemVerilog para la microarquitectura pipeline RV32IM.
+\textit{Entregable:} Código fuente SystemVerilog de la microarquitectura monociclo y reporte de síntesis inicial.
 
-\textbf{Actividad 1.3.} 
-Integrar los módulos del procesador segmentado, sintetizar el diseño completo para la FPGA DE1-SoC y realizar una verificación funcional básica que confirme el correcto funcionamiento conjunto de las etapas.
+\textbf{Actividad 1.3.}
+Diseñar la microarquitectura pipeline de cinco etapas (IF, ID, EX, MEM, WB), definiendo los registros interetapa, la unidad de forwarding, la unidad de detección de hazards de datos y la lógica de flush para el manejo de hazards de control.
 \\
-\textit{Entregable:} Módulo superior funcional para FPGA y reporte de síntesis inicial con evidencias de operación correcta.
+\textit{Entregable:} Diagrama de bloques funcional y documento descriptivo de la microarquitectura pipeline.
 
-\textbf{Objetivo específico 2.} Desarrollar una visualización básica que permita observar el estado interno del pipeline durante la ejecución del procesador.
+\textbf{Actividad 1.4.}
+Codificar en SystemVerilog la microarquitectura pipeline de forma modular, integrar sus componentes, sintetizar el diseño en Quartus Prime para la FPGA DE1-SoC y validar su operación básica mediante simulación.
+\\
+\textit{Entregable:} Código fuente SystemVerilog de la microarquitectura pipeline y reporte de síntesis inicial.
+
+\textbf{Objetivo específico 2.} Verificar la corrección funcional de ambas implementaciones mediante la suite riscv-tests y testbenches desarrollados con cocotb, cubriendo el conjunto de instrucciones RV32IM completo.
 
 \textbf{Actividad 2.1.}
-Definir y seleccionar las señales internas del pipeline que serán expuestas para visualización, así como el medio de salida más adecuado.
+Elaborar un plan de verificación que cubra las instrucciones base RV32I, las instrucciones de la extensión M, casos representativos de hazards de datos, hazards de control y casos límite como división por cero y overflow.
 \\
-\textit{Entregable:} Documento breve con un esquema de la visualización propuesta y la lista de señales seleccionadas.
+\textit{Entregable:} Documento con la lista clasificada de casos de prueba y la cobertura esperada sobre el conjunto de instrucciones RV32IM.
 
 \textbf{Actividad 2.2.}
-Implementar en SystemVerilog el módulo de visualización elegido e integrarlo con el procesador para mostrar en tiempo (casi) real los estados internos seleccionados durante la ejecución de programas de prueba, asegurando que la lógica de visualización no altere la funcionalidad del procesador.
+Desarrollar y ejecutar testbenches automatizados con cocotb para ambas microarquitecturas, comparando los resultados obtenidos con un modelo de referencia en Python y ejecutando la suite completa de riscv-tests.
 \\
-\textit{Entregable:} Código funcional del módulo de visualización y evidencia de una sesión real demostrando su uso.
+\textit{Entregable:} Scripts de cocotb, reporte de resultados pass/fail por instrucción y evidencia de conformidad funcional para ambas implementaciones.
 
-\textbf{Objetivo específico 3.} Verificar la correcta operación del procesador RV32IM mediante testbenches automatizados desarrollados con cocotb, obteniendo además métricas básicas de desempeño.
+\textbf{Objetivo específico 3.} Comparar experimentalmente ambas microarquitecturas midiendo frecuencia máxima, CPI efectivo, throughput y utilización de recursos sobre la FPGA DE1-SoC.
 
 \textbf{Actividad 3.1.}
-Elaborar un plan mínimo de verificación en cocotb que incluya instrucciones representativas, casos de hazards y al menos una operación por cada tipo de instrucción del conjunto RV32IM.
+Definir el protocolo de medición experimental, seleccionando programas de prueba representativos, estableciendo condiciones de síntesis homogéneas (misma versión de Quartus, mismas restricciones de temporización y mismo dispositivo) y determinando el número de réplicas por tratamiento.
 \\
-\textit{Entregable:} Lista documentada de casos de prueba, con su clasificación y cobertura sobre el conjunto de instrucciones.
+\textit{Entregable:} Documento del protocolo experimental con los parámetros de síntesis, lista de benchmarks y plan de réplicas.
 
 \textbf{Actividad 3.2.}
-Desarrollar y ejecutar testbenches automáticos con cocotb para verificar la funcionalidad del procesador, comparar los resultados con un modelo de referencia y recopilar métricas como CPI, throughput y correctitud funcional frente a los resultados esperados.
+Ejecutar el protocolo de medición para ambas microarquitecturas, realizando las síntesis e implementaciones en Quartus Prime, extrayendo la frecuencia máxima mediante el Timing Analyzer y registrando la utilización de LUTs, FFs, memoria y bloques DSP en cada réplica.
 \\
-\textit{Entregable:} Scripts de cocotb, registros de los resultados principales y un breve reporte de la verificación realizada.
+\textit{Entregable:} Tablas de resultados de Fmax y utilización de recursos para ambas arquitecturas.
 
+\textbf{Actividad 3.3.}
+Medir el CPI efectivo, IPC y throughput en hardware para ambas arquitecturas utilizando contadores embebidos instrumentados mediante cocotb, y calcular el speedup y la eficiencia relativa del pipeline respecto al diseño monociclo.
+\\
+\textit{Entregable:} Tablas de CPI, throughput y speedup, junto con un análisis estadístico descriptivo de las réplicas y un reporte comparativo final.
 
+\textbf{Objetivo específico 4.} Desarrollar un módulo de visualización de los estados internos del pipeline sobre la FPGA DE1-SoC como contribución al uso docente.
 
+\textbf{Actividad 4.1.}
+Definir las señales internas del pipeline que serán expuestas para visualización, tales como registros interetapa, PC, señales de hazard y señales de control, y seleccionar el medio de salida disponible en la DE1-SoC.
+\\
+\textit{Entregable:} Documento con el esquema de visualización propuesto y la lista de señales seleccionadas.
 
+\textbf{Actividad 4.2.}
+Desarrollar en SystemVerilog el módulo de visualización e integrarlo con el procesador pipeline.
+\\
+\textit{Entregable:} Código SystemVerilog del módulo de visualización integrado en el repositorio del proyecto, acompañado de capturas fotográficas y tabla de trazas ciclo a ciclo que documenten su operación correcta en ejecución sobre la FPGA DE1-SoC para al menos un programa de prueba.
