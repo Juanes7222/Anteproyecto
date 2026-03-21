@@ -2,78 +2,154 @@
 \section{Marco referencial}
 \label{sec:marco}
 
-\subsection{Marco teorico}
+\subsection{Marco teórico}
 
 \subsubsection{Arquitectura de Computadores y Pipeline}
+Según \textcite{Patterson2017Computer}, el pipelining es una técnica de
+implementación clave donde múltiples instrucciones se superponen en ejecución,
+funcionando de manera análoga a una línea de ensamblaje industrial. Los autores
+describen las cinco etapas clásicas del pipeline RISC: \textit{Instruction Fetch}
+(IF), \textit{Instruction Decode} (ID), \textit{Execute} (EX),
+\textit{Memory Access} (MEM) y \textit{Write Back} (WB), y desarrollan las
+ecuaciones fundamentales de rendimiento que relacionan el tiempo de ejecución
+con el número de instrucciones, los ciclos por instrucción (CPI) y el tiempo de
+ciclo de reloj. Un procesador monociclo mantiene un CPI $= 1$ pero requiere un
+ciclo de reloj extenso determinado por la instrucción más lenta; en contraste,
+un procesador segmentado busca alcanzar un CPI cercano a $1$ permitiendo ciclos
+de reloj significativamente más cortos.
 
-El diseño de arquitecturas modernas se fundamenta en principios cuantitativos que buscan optimizar el rendimiento. Según \textcite{Patterson2017Computer}, el pipelining es una técnica de implementación clave donde múltiples instrucciones se superponen en ejecución, funcionando de manera análoga a una línea de ensamblaje industrial. En su obra, se describen detalladamente las cinco etapas clásicas del pipeline RISC que se implementarán en este proyecto: \textit{Instruction Fetch} (IF), \textit{Instruction Decode} (ID), \textit{Execute} (EX), \textit{Memory Access} (MEM) y \textit{Write Back} (WB).
-
-\textcite{Patterson2017Computer} desarrollan las ecuaciones fundamentales de rendimiento que relacionan el tiempo de ejecución con el número de instrucciones, los ciclos por instrucción (CPI) y el tiempo de ciclo de reloj. Un procesador monociclo mantiene un CPI $= 1$ pero requiere un ciclo de reloj extenso (determinado por la instrucción más lenta); en contraste, un procesador segmentado busca alcanzar un CPI cercano a $1$ permitiendo ciclos de reloj significativamente más cortos.
-
-Sin embargo, el rendimiento del pipeline se ve afectado por tres tipos de \textit{hazards} o riesgos \parencite{Patterson2017Computer}:
+Sin embargo, el rendimiento del pipeline se ve afectado por tres tipos de
+\textit{hazards} o riesgos:
 \begin{enumerate}
-    \item \textbf{Hazards estructurales:} Causados por conflictos de recursos en el hardware.
-    \item \textbf{Hazards de datos:} Resultantes de dependencias entre instrucciones que requieren resultados aún no escritos.
-    \item \textbf{Hazards de control:} Introducidos por instrucciones de salto que alteran el flujo secuencial.
+    \item \textbf{Hazards estructurales:} Causados por conflictos de recursos
+          en el hardware.
+    \item \textbf{Hazards de datos:} Resultantes de dependencias entre
+          instrucciones que requieren resultados aún no escritos.
+    \item \textbf{Hazards de control:} Introducidos por instrucciones de salto
+          que alteran el flujo secuencial.
 \end{enumerate}
+Para mitigar estos efectos se presentan técnicas de resolución como el
+forwarding, el stalling y la predicción de saltos, que constituyen la base
+teórica para comprender la mejora del throughput en la microarquitectura
+RV32IM segmentada.\parencite{Patterson2017Computer}
 
-Para mitigar estos efectos, se presentan técnicas de resolución como el forwarding, el stalling y la predicción de saltos. Esta obra es fundamental para el proyecto, ya que proporciona la base teórica para comprender la mejora del throughput y las métricas de rendimiento en la microarquitectura RV32IM segmentada.
 
 \subsubsection{Diseño Digital y Arquitectura RISC-V}
+Para la implementación práctica en hardware, \textcite{Harris2021Digital}
+proporcionan una transición integral desde los fundamentos del diseño digital
+hasta la construcción de arquitecturas complejas, utilizando el conjunto de
+instrucciones RISC-V como caso de estudio unificador. El texto detalla la
+especificación RV32I y sus extensiones estándar, con especial énfasis en la
+extensión M para operaciones de multiplicación y división por hardware, y
+describe los formatos de instrucción (R, I, S, B, U, J), incluyendo diagramas
+precisos sobre la codificación de campos como \textit{opcode}, \textit{funct3},
+\textit{funct7}, registros fuente/destino e inmediatos.
 
-Para la implementación práctica en hardware, la obra de \textcite{Harris2021Digital} proporciona una transición integral desde los fundamentos del diseño digital hasta la construcción de arquitecturas complejas. Los autores utilizan el conjunto de instrucciones RISC-V como caso de estudio unificador, cubriendo desde puertas lógicas básicas hasta el diseño de procesadores con pipeline.
-
-El texto detalla la especificación RV32I y sus extensiones estándar, con especial énfasis en la extensión M para operaciones de multiplicación y división por hardware. Se describen minuciosamente los formatos de instrucción (R, I, S, B, U, J), incluyendo diagramas precisos sobre la codificación de campos como \textit{opcode}, \textit{funct3}, \textit{funct7}, registros fuente/destino e inmediatos \parencite{Harris2021Digital}.
-
-\textcite{Harris2021Digital} presentan dos implementaciones de referencia cruciales para este proyecto:
+Los autores presentan dos implementaciones de referencia cruciales para este
+proyecto:
 \begin{itemize}
-    \item \textbf{Procesador monociclo:} Una implementación simple donde cada instrucción se ejecuta en un único ciclo de reloj.
-    \item \textbf{Procesador segmentado:} Un diseño de cinco etapas que requiere la implementación de registros interetapa para almacenar señales de control y datos entre fases consecutivas.
+    \item \textbf{Procesador monociclo:} Una implementación donde cada
+          instrucción se ejecuta en un único ciclo de reloj.
+    \item \textbf{Procesador segmentado:} Un diseño de cinco etapas que
+          requiere registros interetapa para almacenar señales de control
+          y datos entre fases consecutivas.
 \end{itemize}
+Para asegurar la corrección funcional del diseño segmentado, los autores
+detallan la lógica de detección de hazards y la unidad de forwarding, y
+proponen un enfoque de diseño modular en SystemVerilog que facilita la
+verificación y el debugging de cada módulo independiente sobre la
+FPGA DE1-SoC.\parencite{Harris2021Digital}
 
-Para asegurar la corrección funcional del diseño segmentado, los autores detallan la lógica de detección de hazards y la unidad de forwarding. Además, el enfoque en el ``diseño modular'' mediante SystemVerilog que proponen Harris y Harris resulta fundamental para este anteproyecto, ya que facilita la verificación y el debugging de cada módulo independiente al ser implementados en la FPGA DE1-SoC.
 
 \subsubsection{Especificación oficial RISC-V}
 
-\textcite{RISCV2019Manual} presentan la especificación oficial del conjunto de instrucciones RISC-V a nivel de usuario, definiendo formalmente el conjunto base RV32I y las extensiones estándar.
-La obra describe para cada instrucción su semántica precisa, la codificación binaria y el comportamiento observable, estableciendo la referencia de corrección funcional para cualquier implementación compatible.
+\textcite{RISCV2019Manual} presentan la especificación oficial del conjunto de
+instrucciones RISC-V a nivel de usuario, definiendo formalmente el conjunto
+base RV32I y las extensiones estándar. La obra describe para cada instrucción
+su semántica precisa, la codificación binaria y el comportamiento observable,
+estableciendo la referencia de corrección funcional para cualquier
+implementación compatible.
 
-En la especificación se introduce un conjunto base mínimo (RV32I), con 40 instrucciones suficientes para servir como objetivo de compilador, que puede ampliarse mediante extensiones opcionales identificadas por letras, como la extensión ``M'' para multiplicación y división enteras.
-La extensión estándar ``M'' incorpora ocho instrucciones aritméticas (\texttt{MUL}, \texttt{MULH}, \texttt{MULHU}, \texttt{MULHSU}, \texttt{DIV}, \texttt{DIVU}, \texttt{REM} y \texttt{REMU}), permitiendo que una implementación RV32I se extienda a RV32IM manteniendo la compatibilidad con la semántica definida por la ISA.[web:233][web:241]
+En la especificación se introduce un conjunto base mínimo (RV32I), con
+47 instrucciones suficientes para servir como objetivo de compilador, que puede
+ampliarse mediante extensiones opcionales identificadas por letras. La extensión
+estándar M incorpora ocho instrucciones aritméticas (\texttt{MUL},
+\texttt{MULH}, \texttt{MULHU}, \texttt{MULHSU}, \texttt{DIV}, \texttt{DIVU},
+\texttt{REM} y \texttt{REMU}), permitiendo que una implementación RV32I se
+extienda a RV32IM manteniendo la compatibilidad con la semántica definida
+por la ISA.
 
-Esta especificación es fundamental para el proyecto porque fija el comportamiento observable del procesador RV32IM y sirve como contrato formal tanto para el diseño de la microarquitectura como para la construcción de testbenches de verificación que comparan resultados contra un modelo ISA.
+Esta especificación es fundamental para el proyecto porque fija el
+comportamiento observable del procesador y sirve como contrato formal tanto
+para el diseño de la microarquitectura como para la construcción de testbenches
+que comparan resultados contra un modelo ISA.
+
 
 \subsubsection{Métricas de rendimiento en arquitectura de computadores}
 
-\textcite{RamosHernandez2003Comparison} utilizan la ecuación clásica de rendimiento de arquitectura de computadores, donde el tiempo de CPU se expresa como el producto entre el número de instrucciones ejecutadas, el CPI medio y el tiempo de ciclo de reloj, descomponiendo así el rendimiento en estos tres factores.
-Este enfoque permite analizar por separado el impacto de optimizaciones a nivel de compilador, de microarquitectura y de hardware.
+\textcite{Patterson2017Computer} formulan la ecuación clásica de rendimiento
+donde el tiempo de CPU se expresa como el producto entre el número de
+instrucciones ejecutadas, el CPI medio y el tiempo de ciclo de reloj,
+descomponiendo el rendimiento en tres factores independientes que permiten
+analizar por separado el impacto de optimizaciones a nivel de compilador,
+de microarquitectura y de hardware.
 
-Por su parte, \textcite{Yi2020CPI} reevalúan el uso de CPI como métrica de rendimiento en tiempo de ejecución y muestran que puede presentar sesgos debidos a la frecuencia de núcleo y a la intensidad de carga, de modo que un CPI aparentemente mejor no siempre se traduce en un menor tiempo de ejecución observado.
-Para mitigar estas limitaciones, proponen analizar desgloses de CPI en componentes asociados a distintos eventos microarquitecturales y complementarlo con métricas alternativas orientadas a identificar cuellos de botella específicos.
+\textcite{Yi2020CPI} reevalúan el uso de CPI como métrica de rendimiento y
+muestran que puede presentar sesgos asociados a la frecuencia de núcleo y a
+la intensidad de carga, de modo que un CPI aparentemente menor no siempre se traduce en un menor tiempo de ejecución observado. Aunque su análisis se
+desarrolla en entornos de computación en nube con escalado dinámico de
+frecuencia, la observación de fondo es relevante para este proyecto: el CPI
+efectivo debe reportarse siempre junto con la frecuencia de operación y el
+throughput resultante, no de forma aislada.
+
 
 \subsubsection{Síntesis en FPGA y análisis de timing}
 
-\textcite{Chu2011FPGA} presenta una metodología práctica de diseño para FPGAs utilizando SystemVerilog como lenguaje de descripción de hardware, mostrando cómo las descripciones a nivel RTL se traducen en LUTs, flip-flops, memorias embebidas y otros recursos especializados del dispositivo.
-El texto enfatiza el uso de buenas prácticas de codificación y estructuras modulares para obtener implementaciones eficientes y portables entre distintas familias de FPGAs.
-
-En el contexto del análisis de timing, Chu destaca que la inserción de registros intermedios para segmentar caminos combinacionales largos es una técnica clave para aumentar la frecuencia máxima de operación, al reducir la profundidad lógica entre registros consecutivos.
-Este enfoque de diseño pipeline permite alcanzar mayores F\textsubscript{max}, pero a costa de incrementar el número total de registros y, por tanto, el uso de recursos y la latencia en ciclos de reloj, lo que introduce un compromiso entre rendimiento, área y latencia que debe considerarse en el diseño sobre FPGA.
+\textcite{Chu2011FPGA} presenta una metodología práctica de diseño para FPGAs
+utilizando SystemVerilog, mostrando cómo las descripciones RTL se traducen en
+LUTs, flip-flops, memorias embebidas y bloques DSP. El texto enfatiza el uso
+de estructuras modulares para obtener implementaciones eficientes y portables,
+y destaca que la inserción de registros intermedios para segmentar caminos
+combinacionales largos es la técnica clave para aumentar la frecuencia máxima
+de operación, al reducir la profundidad lógica entre registros consecutivos.
+Este enfoque introduce un compromiso entre rendimiento, área y latencia que
+debe considerarse explícitamente en el diseño del procesador sobre
+FPGA.
 
 
 \subsection{Estado del arte}
 
 \subsubsection{Introducción}
 
-La arquitectura RISC-V ha experimentado un crecimiento en la última década, consolidándose como una alternativa abierta y flexible para la investigación y el desarrollo de procesadores, gracias a su especificación libre y extensible.\parencite{RISCV2019Manual,Patterson2017Computer}
-Esta apertura ha favorecido la proliferación de núcleos RISC-V de propósito general y embebido, muchos de ellos orientados específicamente a su implementación como \emph{softcores} sobre FPGA en contextos académicos e industriales.\parencite{Chu2011FPGA,Heinz2019Catalog}
+La arquitectura RISC-V ha experimentado un crecimiento sostenido en la última
+década, consolidándose como una alternativa abierta y flexible para la
+investigación y el desarrollo de procesadores, gracias a su especificación
+libre y extensible.\parencite{RISCV2019Manual,Patterson2017Computer}
+Esta apertura ha favorecido la proliferación de núcleos RISC-V de propósito
+general y embebido, muchos de ellos orientados específicamente a su
+implementación como \emph{softcores} sobre FPGA en contextos académicos
+e industriales.\parencite{Heinz2019Catalog}
 
-La posibilidad de sintetizar microarquitecturas RISC-V en FPGAs ha democratizado el acceso a plataformas de prototipado rápido, permitiendo a universidades y grupos de investigación desarrollar y evaluar sus propios diseños sin la barrera de licencias propietarias.\parencite{Chu2011FPGA,Nguyen2024Evaluation}
-Sin embargo, los estudios existentes suelen centrarse en una única microarquitectura o bien en comparaciones entre diferentes núcleos RISC-V ya existentes, más que en comparaciones controladas entre variantes del mismo procesador sobre una misma FPGA.\parencite{Heinz2019Catalog,Liu2021Performance}
+La posibilidad de sintetizar microarquitecturas RISC-V en FPGAs ha
+democratizado el acceso a plataformas de prototipado rápido, permitiendo a
+universidades y grupos de investigación desarrollar y evaluar sus propios
+diseños sin la barrera de licencias propietarias.\parencite{Wei2024NEORV32}
+Sin embargo, los estudios existentes suelen centrarse en una única
+microarquitectura o bien en comparaciones entre diferentes núcleos RISC-V
+ya existentes, más que en comparaciones controladas entre variantes del
+mismo procesador sobre una misma FPGA.
 
-En particular, la literatura científica revisada no ofrece todavía un análisis que compare, bajo condiciones de síntesis y medición homogéneas, una implementación monociclo y una implementación segmentada de un mismo núcleo RV32IM en una plataforma FPGA concreta, reportando sistemáticamente métricas como frecuencia máxima, CPI/IPC y \emph{throughput}.\parencite{Patterson2017Computer,Heinz2019Catalog,Liu2021Performance}
-Este vacío justifica la necesidad de un estudio experimental que contraste directamente ambas microarquitecturas dentro de un marco de evaluación común.
+En particular, la literatura científica revisada no ofrece todavía un
+análisis que compare, bajo condiciones de síntesis y medición homogéneas,
+una implementación monociclo y una implementación segmentada de un mismo
+núcleo RV32IM en una plataforma FPGA concreta, reportando sistemáticamente
+métricas como frecuencia máxima, CPI/IPC y \emph{throughput}.
+Este vacío justifica la necesidad de un estudio experimental que contraste
+directamente ambas microarquitecturas dentro de un marco de evaluación
+común.\parencite{Heinz2019Catalog,Lazzeri2024Comparison}
 
-A partir de esta observación, el presente estado del arte organiza y analiza críticamente los trabajos previos en seis ejes temáticos:
+A partir de esta observación, el presente estado del arte organiza y analiza
+críticamente los trabajos previos en seis ejes temáticos:
 \begin{enumerate}
   \item Implementaciones monociclo de RV32I/RV32IM en FPGA.
   \item Implementaciones segmentadas de RV32I/RV32IM en FPGA.
@@ -83,7 +159,11 @@ A partir de esta observación, el presente estado del arte organiza y analiza cr
   \item \emph{Benchmarks} y métricas de rendimiento.
 \end{enumerate}
 
-Este análisis permite identificar la brecha de conocimiento que el proyecto pretende abordar, situando la comparación entre procesador monociclo y pipeline RV32IM sobre FPGA dentro del contexto actual de investigación en RISC-V.
+Este análisis permite identificar la brecha de conocimiento que el proyecto
+pretende abordar, situando la comparación entre procesador monociclo y
+pipeline RV32IM sobre FPGA dentro del contexto actual de investigación
+en RISC-V.
+
 
 
 \subsubsection{Implementaciones monociclo de RV32I/RV32IM en FPGA}
@@ -95,192 +175,502 @@ Sin embargo, el requisito de que todas las instrucciones respeten el mismo perio
 Aunque las implementaciones monociclo de núcleos RV32I/RV32IM sobre FPGA son valiosas como primer paso y como plataforma educativa, suelen considerarse un punto de partida para diseños más avanzados basados en microarquitecturas segmentadas o multiciclo.
 
 
-\subsubsection{Procesador RV32I monociclo en Intel Cyclone V DE1-SoC}
+\subsubsection{Procesador RV32I monociclo sobre FPGA Intel}
 
-\textcite{Reddy2024Implementation} implementan un procesador RV32I de ciclo único optimizado específicamente para la FPGA Intel Cyclone V presente en la plataforma DE1-SoC, describiendo el núcleo en Verilog y soportando 23 instrucciones del conjunto base RV32I.
-Tras síntesis y place-and-route con Intel Quartus Prime, el diseño alcanza una frecuencia máxima de aproximadamente 30{,}35\,MHz, con un CPI medio de 1{,}0 coherente con la naturaleza monociclo de la arquitectura, y un uso cercano a 2\,500 elementos lógicos (LUTs), acompañado de un consumo de potencia estimado en torno a 424{,}45\,mW según el Power Analyzer de Quartus.
-La verificación funcional se realiza mediante simulación con ModelSim, confirmando la ejecución correcta de todas las instrucciones implementadas sin violaciones de timing reportadas en las condiciones de prueba.
+\textcite{Goh2024UTHMRISCV} presentan el diseño e implementación FPGA de
+un procesador RV32I de ciclo único denominado UTHM-RISC-V, codificado en
+Verilog HDL y sintetizado con Intel Quartus Prime, que soporta 23 instrucciones
+del conjunto base RV32I.
+Tras síntesis e implementación sobre dispositivo Intel FPGA, el diseño alcanza
+una frecuencia máxima de 30{,}35\,MHz, con un CPI igual a 1{,}0 coherente con
+la naturaleza monociclo de la arquitectura, y ocupa 5{,}796 elementos lógicos
+(LUTs), con un consumo de potencia total estimado en 424{,}45\,mW reportado
+por el Power Analyzer de Quartus.
+La verificación funcional se realiza mediante simulación en ModelSim, confirmando
+la ejecución correcta de las 23 instrucciones implementadas.
 
-Este estudio ofrece un baseline cuantitativo directo para arquitecturas monociclo en la plataforma DE1-SoC, proporcionando puntos de referencia concretos en términos de frecuencia máxima y consumo de potencia que resultan útiles para valorar si una implementación segmentada en la misma FPGA justifica su mayor complejidad mediante mejoras proporcionales en throughput.
-No obstante, el trabajo se limita al conjunto base RV32I, sin incluir la extensión M de multiplicación y división, y no reporta resultados sobre benchmarks estandarizados como CoreMark o Dhrystone, lo que deja abierta la cuestión de cómo se comportaría el diseño bajo cargas de trabajo más representativas.
+Este estudio ofrece un punto de referencia cuantitativo para arquitecturas
+monociclo RV32I sobre plataformas Intel FPGA, con métricas concretas de
+frecuencia máxima, utilización lógica y consumo que permiten valorar si una
+implementación segmentada en la misma familia FPGA justifica su mayor
+complejidad mediante mejoras proporcionales de throughput.
+No obstante, el trabajo se limita a un subconjunto de 23 instrucciones del
+conjunto base RV32I, sin incluir la extensión M de multiplicación y división,
+y no reporta resultados sobre benchmarks estandarizados como CoreMark o
+Dhrystone, lo que deja abierta la cuestión del rendimiento bajo cargas de
+trabajo más representativas.
 
-\subsubsection{Procesador RV32I compacto con verificación rigurosa}
 
-\textcite{Kumar2023Implementation} presentan una implementación RV32I de ciclo único compacta y eficiente en energía sobre una FPGA Xilinx Spartan-7, poniendo especial énfasis en una metodología de verificación rigurosa basada en la suite oficial riscv-tests.
-El procesador, descrito en Verilog HDL e incorporando optimizaciones de bajo consumo como clock gating y compartición de recursos, alcanza tras síntesis y place-and-route con Vivado 2021.1 una frecuencia máxima en torno a 45\,MHz, utilizando aproximadamente 2\,134 LUTs, 1\,087 flip-flops y 10 bloques de memoria BRAM.
+\subsubsection{Procesador RV32I monociclo con verificación por suite oficial}
 
-El análisis de potencia reporta un consumo total cercano a 0{,}142\,W (0{,}015\,W dinámico y 0{,}127\,W estático), lo que sitúa a este diseño como una opción particularmente atractiva para sistemas embebidos con restricciones energéticas.
-El aporte metodológico central reside en la documentación detallada del protocolo de verificación: la ejecución de la suite completa riscv-tests para RV32I con una tasa de éxito del 100\,\% establece un estándar de conformidad funcional que resulta directamente replicable en el presente proyecto.
+\textcite{Anjana2025Implementation} presentan una implementación RV32I de ciclo
+único sobre FPGA Xilinx (familia Spartan), describiendo el procesador en Verilog
+HDL con componentes modularmente separados: memoria de instrucciones, banco de
+registros, ALU, memoria de datos y unidad de control.
+El diseño, sintetizado con Xilinx Vivado e ISE, alcanza una frecuencia máxima de
+32\,MHz con un consumo de potencia estimado en 7{,}9\,mW sobre Spartan-3E,
+posicionando esta implementación como una opción de bajo consumo para sistemas
+embebidos con restricciones energéticas.
 
-En términos de rendimiento, la frecuencia de 45\,MHz sobre Spartan-7 es comparable a los aproximadamente 30\,MHz alcanzados por \textcite{Reddy2024Implementation} en Cyclone~V, considerando las diferencias arquitecturales entre familias FPGA (estructura de LUTs y recursos lógicos).
-No obstante, al igual que otros trabajos centrados en RV32I, este estudio no incorpora la extensión M ni evalúa arquitecturas segmentadas, por lo que no aborda de forma directa el impacto del pipelining sobre el throughput ni sobre el espacio de diseño rendimiento-consumo.
+La verificación funcional se realiza mediante simulación en Vivado, confirmando
+la operación correcta de las instrucciones del conjunto base RV32I bajo los
+casos de prueba definidos por los autores.
+Este trabajo aporta una referencia de eficiencia energética para procesadores
+monociclo RV32I en FPGAs de bajo coste, complementando los datos de utilización
+lógica y frecuencia reportados por \textcite{Goh2024UTHMRISCV} para la
+familia Intel.
+Al igual que otros trabajos centrados en RV32I, este estudio no incorpora la
+extensión M ni evalúa arquitecturas segmentadas, por lo que no aborda
+directamente el impacto del pipelining sobre el throughput ni el espacio de
+diseño rendimiento-área.
+
 
 
 \subsubsection{Síntesis comparativa de implementaciones monociclo}
 
-Los estudios revisados convergen en métricas consistentes para arquitecturas monociclo RV32I implementadas en FPGAs de capacidad media: las frecuencias máximas típicas se sitúan en el rango de 30--45\,MHz, limitadas por el camino crítico combinacional que atraviesa secuencialmente las etapas funcionales necesarias para completar cada instrucción en un único ciclo de reloj.\parencite{Reddy2024Implementation,Kumar2023Implementation}
-El CPI medio es igual a 1{,}0 por definición de la microarquitectura de ciclo único, mientras que el uso de recursos lógicos suele encontrarse en el intervalo de 2\,000--2\,500 LUTs, lo que representa aproximadamente un 6--8\,\% de FPGAs con del orden de 32\,k LUTs disponibles.\parencite{Reddy2024Implementation,Kumar2023Implementation}
+Los estudios revisados muestran que arquitecturas monociclo RV32I
+implementadas sobre FPGAs de capacidad media alcanzan frecuencias máximas
+en el rango de 30--45\,MHz, limitadas por el camino crítico combinacional
+que traversa secuencialmente las etapas funcionales necesarias para completar
+cada instrucción en un único ciclo de reloj.
+\parencite{Anjana2025Implementation}
+El CPI medio es igual a 1{,}0 por definición de la microarquitectura de
+ciclo único, mientras que la utilización de recursos lógicos varía según la
+familia FPGA, el subconjunto de instrucciones implementado y las opciones
+de síntesis, resultando difícil establecer un rango universalmente
+representativo sin condiciones de síntesis homogéneas.
 
-Entre las ventajas de estas implementaciones destacan la simplicidad conceptual, la facilidad de depuración y la ausencia de hazards entre instrucciones, al no existir solapamiento temporal en la ejecución.\parencite{Harris2021Digital,ScienceDirect2024Pipeline}
-En contrapartida, la frecuencia de reloj está inherentemente limitada por el camino crítico más largo y el throughput resultante es subóptimo frente a arquitecturas segmentadas o multinivel, especialmente en FPGAs modernas diseñadas para explotar el pipelining profundo.\parencite{Patterson2017Computer,Chu2011FPGA}
+Entre las ventajas de estas implementaciones destacan la simplicidad
+conceptual, la facilidad de depuración y la ausencia de hazards entre
+instrucciones, al no existir solapamiento temporal en la
+ejecución.\parencite{Harris2021Digital}
+En contrapartida, la frecuencia de reloj está inherentemente limitada por
+el camino crítico más largo y el throughput resultante es subóptimo frente
+a arquitecturas segmentadas, especialmente en FPGAs modernas diseñadas para
+explotar el pipelining profundo.\parencite{Patterson2017Computer}
 
-Una limitación crítica a los trabajos revisados es que ninguno implementa la extensión M de RISC-V, la cual introduce latencias potencialmente multicíclo y condiciona tanto el diseño del datapath como las estrategias de segmentación.\parencite{RISCV2019Manual,Reddy2024Implementation,Kumar2023Implementation}
-Esta ausencia impide evaluar de forma completa el impacto de instrucciones aritméticas complejas en el equilibrio rendimiento-recursos de las arquitecturas monociclo frente a sus contrapartes pipeline, dejando abierta la cuestión que el presente proyecto aborda al considerar explícitamente una microarquitectura RV32IM segmentada.
+Una limitación presente en los trabajos revisados es que ninguno implementa
+la extensión M de RISC-V, la cual introduce operaciones de mayor latencia
+que condicionan tanto el diseño del datapath como las estrategias de
+segmentación.\parencite{RISCV2019Manual}
+Esta ausencia impide evaluar el impacto de instrucciones aritméticas
+complejas en el equilibrio rendimiento-recursos de las arquitecturas
+monociclo frente a sus contrapartes pipeline, dejando abierta la cuestión
+que el presente proyecto aborda al considerar explícitamente una
+microarquitectura RV32IM segmentada.
+
 
 \subsubsection{Implementaciones pipeline de RV32I/RV32IM en FPGA}
 
-Las arquitecturas pipeline de cinco etapas constituyen el paradigma dominante en procesadores RISC modernos, dividiendo la ejecución de instrucciones en fases especializadas de búsqueda (IF), decodificación (ID), ejecución (EX), acceso a memoria (MEM) y escritura de resultados (WB) para permitir el solapamiento temporal de múltiples instrucciones.
-Este enfoque reduce el período de reloj asociado al camino crítico de cada etapa individual y aumenta el throughput del procesador al acercar el CPI efectivo a 1 en condiciones ideales, a costa de introducir hazards que deben tratarse mediante unidades de control adicionales, técnicas de forwarding y mecanismos de parada.
+Las arquitecturas pipeline de cinco etapas constituyen el paradigma dominante
+en procesadores RISC modernos, dividiendo la ejecución de instrucciones en
+fases especializadas de búsqueda (IF), decodificación (ID), ejecución (EX),
+acceso a memoria (MEM) y escritura de resultados (WB) para permitir el
+solapamiento temporal de múltiples instrucciones.\parencite{Patterson2017Computer,Harris2021Digital}
+Este enfoque reduce el período de reloj asociado al camino crítico de cada
+etapa individual y aumenta el throughput al acercar el CPI efectivo a 1 en
+condiciones ideales, a costa de introducir hazards que deben tratarse mediante
+unidades de control adicionales, técnicas de forwarding y mecanismos de parada.
 
-Diversos trabajos recientes han implementado núcleos RV32I con pipeline de cinco etapas sobre FPGA, explotando precisamente esta división en etapas para alcanzar frecuencias de operación superiores a las de sus equivalentes monociclo y para integrar técnicas de optimización como predicción de saltos o mejoras en la unidad de decodificación.
-En estos diseños, la segmentación del datapath y la incorporación de lógica específica para resolución de hazards de datos y de control son elementos centrales para lograr un buen compromiso entre rendimiento, uso de recursos lógicos y complejidad de verificación en plataformas FPGA.
+Diversos trabajos recientes han implementado núcleos RV32I con pipeline de
+cinco etapas sobre FPGA, explotando precisamente esta división en etapas para
+alcanzar frecuencias de operación superiores a las de sus equivalentes
+monociclo e integrar técnicas de optimización como predicción de saltos o
+mejoras en la unidad de decodificación.\parencite{Wei2024NEORV32,Najjar2018Pipeline}
+En estos diseños, la segmentación del datapath y la incorporación de lógica
+específica para resolución de hazards de datos y de control son elementos
+centrales para lograr un buen compromiso entre rendimiento, uso de recursos
+lógicos y complejidad de verificación en plataformas FPGA.
 
 
-\subsubsection{Pipeline RV32I optimizado con técnicas avanzadas de resolución de hazards}
+\subsubsection{Pipeline RV32I optimizado con técnicas avanzadas
+              de resolución de hazards}
 
-\textcite{IJACSA2024Performance} presentan un procesador RV32I de cinco etapas segmentadas implementado en una FPGA Xilinx Artix-7, cuyo diseño se centra en optimizar el rendimiento mediante mejoras en la unidad de decodificación y en el tratamiento de saltos de control.
-El núcleo, descrito en Verilog HDL, incorpora mecanismos de resolución de dependencias y optimizaciones en la ruta de control para reducir la degradación de CPI debida a hazards de datos y de control, dentro de la estructura clásica de pipeline IF-ID-EX-MEM-WB.
+\textcite{Wei2024NEORV32} presentan un procesador RV32I de cinco etapas
+implementado en FPGA Xilinx Artix-7, cuyo diseño se centra en optimizar el
+rendimiento mediante mejoras en la unidad de decodificación y en el
+tratamiento de saltos de control.
+El núcleo, descrito en Verilog HDL, incorpora mecanismos de resolución de
+dependencias y optimizaciones en la ruta de control para reducir la
+degradación de CPI debida a hazards de datos y de control, dentro de la
+estructura clásica de pipeline IF-ID-EX-MEM-WB.
 
-Los resultados experimentales muestran que, tras aplicar las técnicas propuestas, el procesador alcanza un rendimiento de 3.11~CoreMark/MHz, lo que supone una mejora aproximada del 11.07\,\% frente a una versión base sin optimizaciones, manteniendo una frecuencia de operación adecuada para la familia Artix-7.
-El uso de CoreMark como métrica normalizada permite comparar la eficiencia arquitectural del diseño independientemente de la frecuencia absoluta, destacando el impacto de las optimizaciones de decodificación y predicción de saltos sobre el throughput efectivo.
+Los resultados experimentales muestran que, tras aplicar las técnicas
+propuestas, el procesador alcanza un rendimiento de 3{,}11~CoreMark/MHz,
+lo que supone una mejora aproximada del 11{,}07\,\% frente a una versión
+base sin optimizaciones, manteniendo una frecuencia de operación adecuada
+para la familia Artix-7.
+El uso de CoreMark como métrica normalizada permite comparar la eficiencia
+arquitectural del diseño independientemente de la frecuencia absoluta,
+destacando el impacto de las optimizaciones de decodificación y predicción
+de saltos sobre el throughput efectivo.
 
-El estudio cuantifica además el coste en recursos de las mejoras introducidas, mostrando un aumento moderado del uso de LUTs asociado a la lógica adicional de control y resolución de hazards, a cambio de un incremento significativo de rendimiento medido por instrucción.
-Este compromiso área-rendimiento proporciona un punto de referencia relevante para el presente proyecto, al ilustrar cómo técnicas de resolución de dependencias y optimización del flujo de instrucciones pueden traducirse en mejoras medibles de CoreMark/MHz en procesadores RISC-V pipeline sobre FPGA.
+El estudio cuantifica además el coste en recursos de las mejoras introducidas,
+mostrando un aumento moderado del uso de LUTs asociado a la lógica adicional
+de control y resolución de hazards, a cambio de un incremento significativo
+de rendimiento medido por instrucción.
+Este compromiso área-rendimiento proporciona un punto de referencia relevante
+para el presente proyecto, al ilustrar cómo técnicas de resolución de
+dependencias y optimización del flujo de instrucciones pueden traducirse en
+mejoras medibles de CoreMark/MHz en procesadores RISC-V pipeline
+sobre FPGA.
+
 
 \subsubsection{Catálogo y evaluación in-hardware de cores RISC-V open-source}
 
-\textcite{Heinz2019Catalog} realizan una evaluación in-hardware de un conjunto de softcores RISC-V de código abierto sobre FPGAs Xilinx Artix-7 y Kintex-7, abarcando tanto núcleos minimalistas como diseños de mayor rendimiento.
-Su metodología incluye síntesis, place-and-route y ejecución directa del benchmark CoreMark en FPGA, repitiendo el flujo de implementación física cinco veces por núcleo para cuantificar la variabilidad de F\textsubscript{max} debida a las herramientas de síntesis.
+\textcite{Heinz2019Catalog} realizan una evaluación in-hardware de un conjunto
+de softcores RISC-V de código abierto sobre FPGAs Xilinx Artix-7 y Kintex-7,
+abarcando tanto núcleos minimalistas como diseños de mayor rendimiento.
+Su metodología incluye síntesis, place-and-route y ejecución directa del
+benchmark CoreMark en FPGA, repitiendo el flujo de implementación física cinco
+veces por núcleo para cuantificar la variabilidad de F\textsubscript{max}
+debida a las herramientas de síntesis.
 
-Los resultados ponen de manifiesto un espectro amplio de compromisos entre recursos y rendimiento: núcleos muy compactos como PicoRV32 priorizan el ahorro de LUTs y FFs a costa de un menor rendimiento en CoreMark/MHz, mientras que diseños más complejos alcanzan valores de CoreMark/MHz significativamente superiores pero con un coste de área que puede llegar a decenas de miles de LUTs, difícilmente asumible en FPGAs educativas de gama media.
-Entre ambos extremos, núcleos de clase microcontrolador como Ibex ofrecen configuraciones balanceadas, con rendimientos en torno a 2--3~CoreMark/MHz y un uso moderado de recursos lógicos, lo que los hace atractivos para aplicaciones embebidas y docencia.
+Los resultados ponen de manifiesto un espectro amplio de compromisos entre
+recursos y rendimiento: núcleos muy compactos como PicoRV32 priorizan el ahorro
+de LUTs y FFs a costa de un menor rendimiento en CoreMark/MHz, mientras que
+diseños más complejos alcanzan valores significativamente superiores pero con un
+coste de área difícilmente asumible en FPGAs educativas de gama media. Entre
+ambos extremos, núcleos de clase microcontrolador como Ibex ofrecen
+configuraciones balanceadas, con rendimientos en torno a 2--3~CoreMark/MHz y un
+uso moderado de recursos lógicos, lo que los hace atractivos para aplicaciones
+embebidas y docencia.
 
-El estudio cuantifica asimismo la variabilidad de síntesis, observando desviaciones típicas del orden del 3\,\% en F\textsubscript{max} entre distintas corridas del flujo EDA, lo que subraya la necesidad de reportar promedios o rangos en lugar de valores puntuales aislados.
-Considerando que la FPGA Intel Cyclone V de la placa DE1-SoC dispone de un orden de magnitud similar de recursos lógicos que las Artix-7 utilizadas en el estudio, los resultados sugieren que diseños balanceados del tipo Ibex son objetivos alcanzables para un núcleo RV32IM segmentado en este proyecto, con un presupuesto razonable de 5\,000--10\,000 LUTs para el procesador.\parencite{Heinz2019Catalog,Nguyen2024Evaluation}
+El estudio cuantifica asimismo la variabilidad de síntesis, observando
+desviaciones típicas del orden del 3\,\% en F\textsubscript{max} entre distintas
+corridas del flujo EDA, lo que subraya la necesidad de reportar promedios o
+rangos en lugar de valores puntuales aislados. Considerando que la FPGA Intel
+Cyclone V de la placa DE1-SoC dispone de un orden de magnitud similar de
+recursos lógicos que las Artix-7 utilizadas en el estudio, los resultados
+sugieren que diseños balanceados del tipo Ibex son objetivos alcanzables para
+un núcleo RV32IM segmentado en este proyecto, con un presupuesto razonable de
+5\,000--10\,000 LUTs para el procesador.
+\parencite{Heinz2019Catalog,Wei2024NEORV32}
+
 
 \subsubsection{Síntesis comparativa de implementaciones pipeline}
 
-Los trabajos analizados sobre núcleos RV32I de cinco etapas segmentadas en FPGA reportan frecuencias máximas típicas en el rango de 80--100\,MHz, aproximadamente entre 2 y 3 veces superiores a las alcanzadas por implementaciones monociclo comparables en las mismas familias de dispositivos.\parencite{IJACSA2024Performance}
-El CPI efectivo se sitúa usualmente entre 1.08 y 1.52, reflejando la penalización introducida por los hazards de datos y de control respecto al valor ideal de CPI igual a 1.\parencite{IJACSA2024Performance}
+Los trabajos analizados sobre núcleos RV32I de cinco etapas segmentadas en FPGA
+muestran que la segmentación permite alcanzar frecuencias de operación
+superiores a las de implementaciones monociclo en la misma familia de
+dispositivos, gracias a la reducción del camino crítico por
+etapa.\parencite{Patterson2017Computer,Harris2021Digital} La eficiencia
+arquitectural medida mediante CoreMark/MHz —métrica que normaliza el rendimiento
+respecto a la frecuencia de operación— se sitúa en el entorno de 2--3
+CoreMark/MHz para núcleos balanceados de clase microcontrolador, según el
+catálogo de \textcite{Heinz2019Catalog}, y alcanza 3{,}11~CoreMark/MHz en el
+procesador NRP optimizado de \textcite{Wei2024NEORV32}, con una mejora del
+11{,}07\,\% respecto a la versión base del mismo diseño.
 
-En términos de recursos lógicos, estos diseños emplean típicamente entre 4\,000 y 6\,000 LUTs, lo que supone un incremento del orden del 50--100\,\% frente a procesadores RV32I monociclo de referencia, debido a la lógica adicional de registros interetapa, detección de dependencias y control del pipeline.\parencite{IJACSA2024Performance}
-La eficiencia arquitectural medida mediante CoreMark/MHz se encuentra en el rango aproximado de 2.8--3.1 y, combinada con las frecuencias de operación anteriores y los CPI efectivos reportados, da lugar a throughputs en torno a 50--70\,MIPS.\parencite{IJACSA2024Performance}
+En términos de recursos lógicos, las arquitecturas segmentadas incorporan
+registros interetapa, lógica de forwarding y unidades de detección de hazards
+que incrementan el uso de LUTs respecto a implementaciones monociclo
+equivalentes, aunque la magnitud exacta de ese incremento depende de las
+opciones de síntesis y de la familia FPGA, y varía entre los trabajos revisados
+sin que sea posible establecer un rango representativo a partir de las fuentes
+disponibles.
 
-En conjunto, estos resultados cuantifican un compromiso claro: las microarquitecturas segmentadas incrementan el uso de recursos entre un 50 y un 100\,\%, pero proporcionan un throughput 2--3 veces superior y una mejora de alrededor del 10--30\,\% en CoreMark/MHz frente a diseños de complejidad comparable situados en la parte alta del espectro de núcleos monociclo descritos en catálogos de cores RISC-V open-source.\parencite{Heinz2019Catalog,IJACSA2024Performance}
-No obstante, la mayoría de los estudios se centran en evaluar únicamente la variante pipeline o en comparar varios cores distintos, sin disponer de un procesador monociclo y uno segmentado del mismo diseño evaluados en la misma FPGA y bajo un protocolo de medición homogéneo, lo que dificulta valorar de forma controlada si el overhead en recursos y complejidad se justifica plenamente.\parencite{Heinz2019Catalog}
+En conjunto, los resultados disponibles apuntan a un compromiso favorable entre
+recursos y rendimiento para las microarquitecturas segmentadas, pero la mayoría
+de los estudios evalúan únicamente la variante pipeline o comparan varios cores
+distintos, sin disponer de un procesador monociclo y uno segmentado del mismo
+diseño evaluados en la misma FPGA bajo un protocolo de medición homogéneo, lo
+que dificulta valorar de forma controlada si el overhead en recursos y
+complejidad se justifica plenamente.
+
 
 \subsubsection{Técnicas de resolución de hazards en arquitecturas pipeline}
+.
+Los hazards representan situaciones que impiden el flujo ideal de instrucciones
+en un pipeline, incrementando el CPI efectivo y degradando el rendimiento global
+del procesador al introducir ciclos de espera adicionales. En la literatura
+clásica de arquitectura de computadores se distinguen tres categorías
+principales: hazards de datos, originados por dependencias entre instrucciones;
+hazards de control, asociados a cambios en el flujo de ejecución debidos a
+saltos y bifurcaciones; y hazards estructurales, causados por conflictos en el
+uso simultáneo de recursos hardware compartidos.\parencite{Patterson2017Computer}
 
-Los hazards representan situaciones que impiden el flujo ideal de instrucciones en un pipeline, incrementando el CPI efectivo y degradando el rendimiento global del procesador al introducir ciclos de espera adicionales.\parencite{Patterson2017Computer}
-En la literatura clásica de arquitectura de computadores se distinguen tres categorías principales: hazards de datos, originados por dependencias entre instrucciones; hazards de control, asociados a cambios en el flujo de ejecución debidos a saltos y bifurcaciones; y hazards estructurales, causados por conflictos en el uso simultáneo de recursos hardware compartidos.\parencite{Patterson2017Computer}
 
 \paragraph{Análisis sistemático de técnicas de resolución de hazards}
 
-\textcite{Mnaaoui2018Pipeline} estudian de forma sistemática distintas técnicas de resolución de hazards en un procesador RISC de 32 bits con pipeline de cinco etapas, descrito en VHDL y sintetizado en una FPGA Xilinx Virtex-5.
-El trabajo identifica y clasifica los hazards que aparecen en la arquitectura propuesta, diseña soluciones específicas para cada tipo e integra la lógica de gestión de hazards en la unidad de control del procesador.
+\textcite{Najjar2018Pipeline} estudian de forma sistemática distintas técnicas
+de resolución de hazards en un procesador RISC de 32 bits con pipeline de cinco
+etapas, identificando y clasificando los hazards que aparecen en la arquitectura
+propuesta, diseñando soluciones específicas para cada tipo e integrando la
+lógica de gestión de hazards en la unidad de control del procesador.
 
-Entre las técnicas implementadas se encuentran esquemas de forwarding mediante multiplexores adicionales en las entradas de la ALU para resolver dependencias de datos recientes, mecanismos de stalling que insertan burbujas cuando el reenvío no es suficiente, y una lógica de predicción y gestión de saltos que reduce la penalización asociada a los hazards de control.
-Estas técnicas se modelan y validan mediante simulaciones a nivel RTL, comparando el comportamiento del pipeline antes y después de activar las unidades de resolución de hazards.
+Entre las técnicas implementadas se encuentran esquemas de forwarding mediante
+multiplexores adicionales en las entradas de la ALU para resolver dependencias
+de datos recientes, mecanismos de stalling que insertan burbujas cuando el
+reenvío no es suficiente, y una lógica de predicción y gestión de saltos que
+reduce la penalización asociada a los hazards de control. Estas técnicas se
+modelan y validan mediante simulaciones a nivel RTL, comparando el
+comportamiento del pipeline antes y después de activar las unidades de
+resolución de hazards.
 
-Los autores muestran que la combinación de forwarding y stalling adecuadamente controlados permite reducir de forma significativa el número de ciclos de espera debidos a dependencias de datos, mientras que la mejora en el tratamiento de saltos disminuye el coste medio de las instrucciones de control sobre el CPI efectivo
-El análisis de síntesis en Virtex-5 indica que la lógica adicional de detección de hazards, multiplexores de reenvío y control de saltos introduce un incremento moderado en el uso de recursos lógicos, pero aporta una mejora clara en el rendimiento del procesador medida en términos de ciclos por instrucción, lo que respalda la idea de que estas técnicas son costo-efectivas en arquitecturas pipeline.
+Los autores muestran que la combinación de forwarding y stalling adecuadamente
+controlados reduce de forma significativa el número de ciclos de espera debidos
+a dependencias de datos, mientras que la mejora en el tratamiento de saltos
+disminuye el coste medio de las instrucciones de control sobre el CPI efectivo.
+El análisis de síntesis indica que la lógica adicional de detección de hazards,
+multiplexores de reenvío y control de saltos introduce un incremento moderado en
+el uso de recursos lógicos, pero aporta una mejora clara en el rendimiento
+medida en términos de ciclos por instrucción, lo que respalda la idea de que
+estas técnicas son costo-efectivas en arquitecturas
+pipeline.
+
 
 \subsubsection{Estudios comparativos multi-arquitectura}
 
-Los estudios que comparan procesadores RISC-V con arquitecturas alternativas como ARM o MIPS, así como los que evalúan múltiples implementaciones de núcleos RISC-V, proporcionan un contexto útil para situar el rendimiento esperado de diseños RV32IM dentro del espectro de procesadores RISC embebidos.\parencite{Liu2021Performance,Heinz2019Catalog}
+Los estudios que comparan procesadores RISC-V con arquitecturas alternativas
+como ARM o MIPS, así como los que evalúan múltiples implementaciones de núcleos
+RISC-V, proporcionan un contexto útil para situar el rendimiento esperado de
+diseños RV32IM dentro del espectro de procesadores RISC
+embebidos.\parencite{Liu2021Performance,Heinz2019Catalog}
+
 
 \paragraph{Comparación cuantitativa RISC-V vs. ARM vs. MIPS}
 
-\textcite{Liu2021Performance} presentan un estudio de caso en el que comparan sistemas basados en RISC-V, ARM Cortex y MIPS bajo condiciones experimentales controladas, empleando un conjunto de benchmarks que incluye Dhrystone, Whetstone, CoreMark y MiBench.
-Un elemento clave de su metodología es la normalización de la frecuencia de operación para eliminar sesgos tecnológicos, de forma que las comparaciones se centran en métricas como CPI, número de instrucciones ejecutadas y rendimiento normalizado por MHz.
+\textcite{Liu2021Performance} presentan una comparación experimental de
+sistemas basados en RISC-V, ARM Cortex y MIPS bajo condiciones controladas,
+empleando herramientas de benchmark de propósito general (UnixBench y LMbench)
+para evaluar métricas como eficiencia de cómputo, ancho de banda de
+comunicación local y latencias de acceso, normalizando los resultados para
+eliminar sesgos tecnológicos entre plataformas.
 
-Los resultados muestran que RISC-V se sitúa generalmente en una posición intermedia: supera a ciertas configuraciones MIPS en algunas métricas de rendimiento normalizado, pero suele quedar por detrás de núcleos ARM de gama similar, que aprovechan técnicas más agresivas de resolución de hazards y optimizaciones microarquitecturales.
-Este tipo de estudios nos dice que, para ser competitivos, diseños RV32I/RV32IM de cinco etapas deben aspirar a CPI cercanos a 1 en cargas de trabajo típicas y a valores de CoreMark/MHz comparables a los de otros procesadores RISC embebidos de propósito general.
+Los resultados muestran que RISC-V se sitúa en una posición intermedia: presenta
+alta capacidad de cómputo científico y gran ancho de banda de comunicación
+local, pero exhibe mayores latencias de acceso a ficheros y comunicación que
+MIPS y ARM en las condiciones evaluadas. Este tipo de estudios sugiere que, para
+ser competitivos, diseños RV32I/RV32IM de cinco etapas deben aspirar a CPI
+cercanos a 1 en cargas de trabajo típicas y a valores de rendimiento normalizado
+comparables a los de otros procesadores RISC embebidos de propósito general.
+
 
 \paragraph{Impacto de la extensión M en el rendimiento}
 
-\textcite{Islam2020RVCoreP32IM} analizan específicamente el impacto de la extensión M de RISC-V (instrucciones de multiplicación y división) sobre el rendimiento de un procesador de cinco etapas implementado como softcore en FPGA.
-Partiendo de una arquitectura base RV32I, proponen la variante RVCoreP-32IM con soporte hardware para la extensión M y evalúan distintas implementaciones de multiplicadores, como versiones iterativas basadas en radix-4 y variantes que explotan bloques DSP dedicados del FPGA.
+\textcite{Islam2020RVCoreP32IM} analizan específicamente el impacto de la
+extensión M de RISC-V sobre el rendimiento de un procesador de cinco etapas
+implementado como softcore en FPGA Artix-7. Partiendo de la arquitectura base
+RVCoreP (RV32I), proponen la variante RVCoreP-32IM con soporte hardware para
+la extensión M y evalúan distintas implementaciones de multiplicadores:
+versiones iterativas basadas en radix-4 y variantes que explotan bloques DSP
+dedicados de la FPGA.
 
-Usando benchmarks como Dhrystone, CoreMark y Embench, muestran que la configuración RV32IM proporciona mejoras de rendimiento significativas respecto a RV32I para programas que utilizan instrucciones de multiplicación y división, y que el uso de multiplicadores basados en bloques DSP puede incrementar aún más la ganancia al combinar mayor frecuencia de operación con menor latencia para estas operaciones.\parencite{Islam2020RVCoreP32IM}
-Al mismo tiempo, el estudio cuantifica el incremento de recursos lógicos y de bloques DSP asociado a la extensión M, lo que evidencia que esta extensión introduce un overhead apreciable de área y complejidad que debe sopesarse frente a los \emph{speedups} logrados en aplicaciones intensivas en operaciones aritméticas.
+Usando benchmarks Dhrystone, CoreMark y Embench, muestran que RV32IM
+proporciona mejoras de rendimiento de 1{,}87x con multiplicador radix-4 y de
+3{,}13x con multiplicador basado en bloques DSP, respecto a la versión base
+RV32I. Al mismo tiempo, el estudio cuantifica el incremento de recursos lógicos
+y de bloques DSP asociado a la extensión M, evidenciando un overhead apreciable
+de área que debe sopesarse frente a los speedups logrados en aplicaciones
+intensivas en operaciones aritméticas.\parencite{Islam2020RVCoreP32IM}
 
-En el contexto de este proyecto, estos trabajos sugieren que un diseño RV32IM pipeline bien afinado debería buscar un CPI efectivo próximo a 1 en benchmarks mixtos y un rendimiento normalizado (por ejemplo, CoreMark/MHz) en el rango típico de los núcleos RISC-V embebidos analizados en la literatura, asumiendo un incremento razonable en LUTs y uso de DSPs frente a RV32I monociclo.\parencite{Liu2021Performance,Islam2020RVCoreP32IM}
+En el contexto de este proyecto, estos trabajos sugieren que un diseño RV32IM
+pipeline bien afinado debería buscar un CPI efectivo próximo a 1 en benchmarks
+mixtos y un rendimiento normalizado en el rango típico de núcleos RISC-V
+embebidos, asumiendo un incremento razonable en LUTs y uso de DSPs frente a
+RV32I monociclo.\parencite{Liu2021Performance,Islam2020RVCoreP32IM}
+
 
 \subsubsection{Metodologías de verificación funcional}
 
-La verificación funcional rigurosa es crítica para garantizar que las implementaciones de procesadores ejecutan correctamente todas las instrucciones de la ISA según la especificación, especialmente al comparar arquitecturas como monociclo y pipeline, donde errores sutiles relacionados con hazards pueden pasar desapercibidos en pruebas superficiales.
+La verificación funcional rigurosa es crítica para garantizar que las
+implementaciones de procesadores ejecutan correctamente todas las instrucciones
+de la ISA según la especificación, especialmente al comparar arquitecturas
+como monociclo y pipeline, donde errores sutiles relacionados con hazards pueden
+pasar desapercibidos en pruebas superficiales.
+
 
 \paragraph{Suite riscv-tests como referencia de conformidad}
 
-La suite oficial riscv-tests, mantenida actualmente en el repositorio \texttt{riscv-software-src/riscv-tests}, se ha consolidado como referencia de facto para verificar conformidad ISA a nivel de instrucciones en procesadores RISC-V.
-Incluye grupos de pruebas dirigidos para conjuntos como RV32I y RV32IM, con decenas de tests unitarios que ejercitan instrucciones individuales y combinaciones básicas de operaciones, con informes de cobertura de más del 90\,\% para RV32I y cerca del 90\,\% para RV32IM según los análisis de Imperas.
+La suite oficial riscv-tests, mantenida en el repositorio
+\texttt{riscv-software-src/riscv-tests}, se ha consolidado como referencia
+de facto para verificar conformidad ISA a nivel de instrucciones en procesadores
+RISC-V. Incluye grupos de pruebas dirigidos para conjuntos como RV32I y RV32IM,
+con tests unitarios que ejercitan instrucciones individuales y combinaciones
+básicas de operaciones.\parencite{RISCVFoundation2019}
 
-\textcite{Kumar2023Implementation} aplican esta metodología a su procesador RV32I monociclo y reportan la ejecución correcta de todos los tests seleccionados de la suite, lo que establece un nivel de conformidad ISA exigente pero alcanzable en diseños académicos sobre FPGA.
-En el contexto de este proyecto, exigir que tanto la versión monociclo como la segmentada RV32IM superen el conjunto completo de pruebas de riscv-tests correspondiente se considera un requisito mínimo para que cualquier comparación de rendimiento entre ambas arquitecturas sea válida.
+En el contexto de este proyecto, exigir que tanto la versión monociclo como la
+segmentada RV32IM superen el conjunto completo de pruebas de riscv-tests
+correspondiente se considera un requisito mínimo para que cualquier comparación
+de rendimiento entre ambas arquitecturas sea válida.\parencite{lowRISC2019}
+
 
 \paragraph{Cocotb como framework de verificación}
 
-Cocotb es un framework de verificación basado en Python que permite escribir testbenches que interactúan con simuladores HDL como Icarus Verilog, Verilator o ModelSim mediante cosimulación, ofreciendo una alternativa flexible a entornos basados en SystemVerilog y UVM. \parencite{cocotbDocs}
-Un estudio comparativo reciente centrado en la verificación de un módulo AES-128 analiza Cocotb frente a UVM en términos de productividad, cobertura y tiempo de simulación. \parencite{AES2024CocotbUVM}
+Cocotb es un framework de verificación basado en Python que permite escribir
+testbenches que interactúan con simuladores HDL como Icarus Verilog, Verilator
+o ModelSim mediante cosimulación, ofreciendo una alternativa flexible a entornos
+basados en SystemVerilog y UVM.\parencite{cocotbDocs}
 
-Los autores y el resumen técnico asociado destacan que, en el caso de estudio considerado, Cocotb logra una cobertura de código ligeramente superior y una cobertura funcional más completa que UVM, a costa de tiempos de simulación mayores debido al overhead de la cosimulación Python-HDL.
-Al mismo tiempo, el entorno Python y las bibliotecas asociadas reducen el esfuerzo necesario para construir el testbench y gestionar la sincronización de eventos, lo que se traduce en una mayor productividad en la creación y extensión de casos de prueba.
+Un estudio comparativo reciente sobre verificación de un módulo AES-128 analiza
+Cocotb frente a UVM en términos de productividad, cobertura y tiempo de
+simulación. Los autores muestran que Cocotb logra una cobertura funcional
+comparable o superior a UVM, con un esfuerzo de construcción del testbench
+menor, a costa de tiempos de simulación mayores debidos al overhead de la
+cosimulación Python-HDL. El entorno Python reduce la barrera de entrada y
+facilita la extensión de casos de prueba, lo que lo convierte en una opción
+adecuada para verificación funcional en proyectos académicos de diseño de
+procesadores.\parencite{AES2024CocotbUVM}
 
 \subsubsection{CoreMark como benchmark estándar para procesadores embebidos}
 
-CoreMark, desarrollado por el consorcio EEMBC, se ha consolidado como un benchmark estándar para evaluar el rendimiento de procesadores embebidos, sustituyendo progresivamente a Dhrystone gracias a un diseño que reduce la dependencia de la librería estándar y dificulta las optimizaciones no representativas del compilador.\parencite{eembc_nd_coremark,arm2022coremark}
-El núcleo del benchmark combina procesamiento de listas enlazadas, operaciones matriciales, una máquina de estados finitos y cálculo de CRC, con datos generados en tiempo de ejecución para evitar que el compilador pueda precomputar resultados estáticos.\parencite{eembc_nd_coremark}
+CoreMark, desarrollado por el consorcio EEMBC, se ha consolidado como un
+benchmark estándar para evaluar el rendimiento de procesadores embebidos,
+sustituyendo progresivamente a Dhrystone gracias a un diseño que reduce la
+dependencia de la librería estándar y dificulta las optimizaciones no
+representativas del compilador.\parencite{eembc_nd_coremark,arm2022coremark}
+El núcleo del benchmark combina procesamiento de listas enlazadas, operaciones
+matriciales, una máquina de estados finitos y cálculo de CRC, con datos
+generados en tiempo de ejecución para evitar que el compilador pueda
+precomputar resultados estáticos.
 
-Las reglas de ejecución de CoreMark exigen que el programa se ejecute durante al menos 10 segundos para que los resultados sean válidos, y se recomienda realizar múltiples ejecuciones de perfilado y reportar el promedio junto con los parámetros de compilación utilizados.\parencite{eembc_nd_coremark,arm2022coremark}
-Además de la puntuación absoluta, es habitual informar de la métrica normalizada CoreMark/MHz, que se obtiene dividiendo el resultado por la frecuencia efectiva y permite comparar la eficiencia arquitectural independientemente de la frecuencia de reloj del sistema.\parencite{eembc_nd_coremark,arm2022coremark}
+Las reglas de ejecución de CoreMark exigen que el programa se ejecute durante
+al menos 10 segundos para que los resultados sean válidos, y se recomienda
+realizar múltiples ejecuciones y reportar el promedio junto con los parámetros
+de compilación utilizados.
+Además de la puntuación absoluta, es habitual informar de la métrica
+normalizada CoreMark/MHz, que se obtiene dividiendo el resultado por la
+frecuencia efectiva y permite comparar la eficiencia arquitectural
+independientemente de la frecuencia de reloj del
+sistema.
+
 
 \subsubsection{Identificación de la brecha en la literatura}
 
-A pesar de la proliferación de implementaciones RISC-V sobre FPGA descritas en la literatura, el análisis crítico de los trabajos revisados permite identificar varias limitaciones que dificultan extraer conclusiones sólidas sobre los trade-offs reales entre arquitecturas monociclo y pipeline de procesadores RV32I/RV32IM en FPGAs de uso educativo.\parencite{Heinz2019Catalog,Reddy2024Implementation,IJACSA2024Performance}
+A pesar de la proliferación de implementaciones RISC-V sobre FPGA descritas
+en la literatura, el análisis crítico de los trabajos revisados permite
+identificar varias limitaciones que dificultan extraer conclusiones sólidas
+sobre los trade-offs reales entre arquitecturas monociclo y pipeline de
+procesadores RV32I/RV32IM en FPGAs de uso educativo.
+\parencite{Heinz2019Catalog,Goh2024UTHMRISCV}
+
 
 \paragraph{Ausencia de comparaciones controladas directas}
 
-En la mayoría de estudios se implementa una única microarquitectura por trabajo, sin disponer de versiones monociclo y segmentada del mismo diseño evaluadas bajo el mismo flujo de síntesis y en la misma FPGA.\parencite{Reddy2024Implementation,IJACSA2024Performance}
-Por ejemplo, \textcite{Reddy2024Implementation} presentan un procesador RV32I de ciclo único sobre Cyclone V, mientras que NRP describen un procesador RV32I pipeline de cinco etapas, pero ninguno de los dos trabajos compara directamente ambas variantes del mismo núcleo bajo condiciones experimentales idénticas.\parencite{Reddy2024Implementation,IJACSA2024Performance}
+En la mayoría de estudios se implementa una única microarquitectura por trabajo,
+sin disponer de versiones monociclo y segmentada del mismo diseño evaluadas
+bajo el mismo flujo de síntesis y en la misma FPGA.
+\parencite{Goh2024UTHMRISCV}
+Por ejemplo, \textcite{Goh2024UTHMRISCV} presentan un procesador RV32I de
+ciclo único sobre FPGA Intel, mientras que \textcite{Wei2024NEORV32} describen un
+procesador RV32I pipeline de cinco etapas sobre Artix-7, pero ninguno de los
+dos trabajos compara directamente ambas variantes del mismo núcleo bajo
+condiciones experimentales idénticas.
 
-Como consecuencia, los resultados de distintos artículos no son directamente comparables, suelen diferir en la ISA exacta, en las optimizaciones microarquitecturales adoptadas, en la experiencia del equipo de diseño y en las herramientas y versiones de síntesis utilizadas, entre otros factores.\parencite{Heinz2019Catalog}
+Como consecuencia, los resultados de distintos artículos no son directamente
+comparables: suelen diferir en la ISA exacta, en las optimizaciones
+microarquitecturales adoptadas, en la experiencia del equipo de diseño y en
+las herramientas y versiones de síntesis utilizadas, entre otros
+factores.
+
 
 \paragraph{Heterogeneidad de plataformas FPGA}
 
-Otra limitación relevante es la diversidad de plataformas utilizadas: algunos trabajos emplean FPGAs Xilinx Spartan-7 o Artix-7, otros usan dispositivos Intel Cyclone V u otras familias, cada una con arquitecturas internas y capacidades distintas.\parencite{Heinz2019Catalog,Nguyen2024Evaluation}
-Esta heterogeneidad implica que frecuencias máximas como 80--100\,MHz en Artix-7 y del orden de 30\,MHz en Cyclone V no pueden interpretarse de forma directa como evidencia de una mejora de 2--3 veces debida exclusivamente al uso de pipeline, ya que parte de la diferencia puede atribuirse a la tecnología y a la arquitectura del FPGA subyacente.\parencite{Chu2011FPGA}
+Otra limitación relevante es la diversidad de plataformas utilizadas: algunos
+trabajos emplean FPGAs Xilinx Spartan-7 o Artix-7, otros usan dispositivos
+Intel de distintas familias, cada una con arquitecturas internas y capacidades
+distintas.\parencite{Heinz2019Catalog,Wei2024NEORV32}
+Esta heterogeneidad implica que frecuencias máximas reportadas en distintas
+familias FPGA no pueden interpretarse de forma directa como evidencia de mejoras
+atribuibles exclusivamente al uso de pipeline, ya que parte de la diferencia
+puede deberse a la tecnología y arquitectura del dispositivo
+subyacente.\parencite{Chu2011FPGA}
+
 
 \paragraph{Protocolos de medición inconsistentes}
 
-Los estudios revisados también muestran una notable variación en los protocolos de medición y en las métricas reportadas.\parencite{Heinz2019Catalog,IJACSA2024Performance}
-Algunos trabajos utilizan CoreMark, otros se basan en Dhrystone u otros benchmarks específicos, mientras que en ciertos casos solo se informa de la frecuencia máxima o de un CPI medio sin acompañarlo de una carga de trabajo claramente definida ni de métricas normalizadas como CoreMark/MHz.\parencite{eembc_nd_coremark,arm2022coremark}
+Los estudios revisados muestran una notable variación en los protocolos de
+medición y en las métricas reportadas.\parencite{Heinz2019Catalog,Wei2024NEORV32}
+Algunos trabajos utilizan CoreMark, otros se basan en Dhrystone u otros
+benchmarks específicos, mientras que en ciertos casos solo se informa de la
+frecuencia máxima o de un CPI medio sin acompañarlo de una carga de trabajo
+claramente definida ni de métricas normalizadas como
+CoreMark/MHz.\parencite{eembc_nd_coremark,arm2022coremark}
 
-Asimismo, las opciones de compilación y el nivel de detalle en la documentación de las condiciones de prueba difieren entre artículos, lo que dificulta integrar cuantitativamente resultados de distintas fuentes para extraer conclusiones robustas sobre los trade-offs arquitecturales.\parencite{Heinz2019Catalog,IJACSA2024Performance}
+Asimismo, las opciones de compilación y el nivel de detalle en la
+documentación de las condiciones de prueba difieren entre artículos, lo que
+dificulta integrar cuantitativamente resultados de distintas fuentes para
+extraer conclusiones robustas sobre los trade-offs
+arquitecturales.\parencite{Heinz2019Catalog}
+
 
 \paragraph{Ausencia de evidencia específica para DE1-SoC en contexto educativo}
 
-Aunque la placa DE1-SoC basada en Intel Cyclone V es muy utilizada en entornos docentes de arquitectura de computadores, los trabajos que reportan resultados específicos para esta plataforma son escasos.\parencite{Nguyen2024Evaluation}
-En particular, la implementación de \textcite{Reddy2024Implementation} proporciona datos para un procesador RV32I monociclo en Cyclone V, pero no se dispone de un estudio equivalente que presente y compare de forma sistemática una microarquitectura pipeline del mismo núcleo en la misma placa.
+Aunque la placa DE1-SoC basada en Intel Cyclone V es muy utilizada en
+entornos docentes de arquitectura de computadores, los trabajos que reportan
+resultados específicos para esta plataforma son escasos.\parencite{Wei2024NEORV32}
+Si bien \textcite{Goh2024UTHMRISCV} aportan métricas de síntesis para un
+procesador RV32I monociclo sobre FPGA Intel, su trabajo no especifica el
+modelo de placa ni evalúa una variante segmentada del mismo núcleo, por lo
+que no es posible extraer de él una comparación controlada directa aplicable
+a la DE1-SoC.
 
-Esto deja a docentes e investigadores que trabajan con DE1-SoC sin datos empíricos directamente comparables que les ayuden a valorar, en condiciones controladas, si la complejidad adicional de una implementación pipeline RV32IM se justifica frente a un diseño monociclo en términos de rendimiento y uso de recursos.\parencite{Reddy2024Implementation,Heinz2019Catalog}
+Esto deja a docentes e investigadores que trabajan con DE1-SoC sin datos
+empíricos directamente comparables que les ayuden a valorar, en condiciones
+controladas, si la complejidad adicional de una implementación pipeline RV32IM
+se justifica frente a un diseño monociclo en términos de rendimiento y uso de
+recursos en esa plataforma concreta.
+
 
 \subsubsection{Conclusiones del estado del arte}
 
-El análisis de la literatura muestra que existen múltiples implementaciones monociclo y pipeline de procesadores RISC-V sobre FPGA, con resultados de rendimiento cuantificados en términos de frecuencia máxima, CPI efectivo y, en algunos casos, CoreMark/MHz.\parencite{Reddy2024Implementation,Kumar2023Implementation,IJACSA2024Performance,Heinz2019Catalog}
-En conjunto, los trabajos revisados sitúan a los núcleos RV32I monociclo de referencia en rangos típicos de decenas de MHz para la frecuencia máxima y CPI igual a 1, mientras que las microarquitecturas segmentadas de cinco etapas alcanzan frecuencias sensiblemente superiores y CPI efectivos algo mayores que 1 debido a los hazards, a la vez que demuestran mejoras claras en métricas normalizadas como CoreMark/MHz cuando se aplican técnicas adecuadas de resolución de hazards.\parencite{Patterson2017Computer,IJACSA2024Performance,Heinz2019Catalog}
 
-Sin embargo, no se ha identificado en la literatura un estudio que compare de forma controlada una arquitectura monociclo y una arquitectura pipeline del mismo procesador RV32IM implementadas en la misma FPGA y evaluadas bajo un protocolo de medición homogéneo, lo que impide extraer conclusiones directas sobre los trade-offs reales entre ambas opciones en un entorno educativo específico como DE1-SoC.\parencite{Reddy2024Implementation,Heinz2019Catalog}
+El análisis de la literatura muestra que existen múltiples implementaciones
+monociclo y pipeline de procesadores RISC-V sobre FPGA, con resultados de
+rendimiento cuantificados en términos de frecuencia máxima, CPI efectivo y,
+en algunos casos, CoreMark/MHz.\parencite{Goh2024UTHMRISCV,Wei2024NEORV32,Heinz2019Catalog}
+En conjunto, los trabajos revisados sitúan a los núcleos RV32I monociclo de
+referencia en frecuencias del orden de decenas de MHz y CPI igual a 1, mientras
+que las microarquitecturas segmentadas de cinco etapas alcanzan frecuencias
+sensiblemente superiores y CPI efectivos algo mayores que 1 debido a los
+hazards, a la vez que demuestran mejoras claras en CoreMark/MHz cuando se
+aplican técnicas adecuadas de resolución de
+dependencias.\parencite{Patterson2017Computer,Heinz2019Catalog}
 
-A partir de esta revisión se destacan cuatro brechas principales: 
+Sin embargo, no se ha identificado en la literatura un estudio que compare de
+forma controlada una arquitectura monociclo y una arquitectura pipeline del
+mismo procesador RV32IM implementadas en la misma FPGA bajo un protocolo de
+medición homogéneo, lo que impide extraer conclusiones directas sobre los
+trade-offs reales entre ambas opciones en un entorno educativo específico como
+la DE1-SoC.\parencite{Goh2024UTHMRISCV,Heinz2019Catalog}
 
-\begin{enumerate}[label=(\roman*)]
-    \item \textbf{Brecha metodológica:} Al no implementarse y evaluarse de forma conjunta ambas microarquitecturas del mismo núcleo bajo condiciones experimentales idénticas.
-    \item \textbf{Brecha plataforma-específica:} Debida a la escasez de datos detallados para la FPGA Intel Cyclone V utilizada en la tarjeta DE1-SoC.
-    \item \textbf{Brecha en los protocolos de medición:} Reflejada en la heterogeneidad de \textit{benchmarks}, métricas y metodologías de verificación empleadas.
-    \item \textbf{Brecha a nivel de ISA:} Muchos trabajos se limitan al conjunto base RV32I, sin incorporar la extensión M pese a su relevancia en aplicaciones embebidas \parencite{Reddy2024Implementation, Heinz2019Catalog, NRP2024Performance, RISCVFoundation2019}.
+    
+A partir de esta revisión se destacan cinco brechas principales:
+
+\begin{enumerate}
+    \item[(i)] \textbf{Brecha metodológica:} Al no implementarse y evaluarse de
+          forma conjunta ambas microarquitecturas del mismo núcleo bajo
+          condiciones experimentales idénticas.
+
+    \item[(ii)] \textbf{Brecha plataforma-específica:} Debida a la escasez de datos
+          detallados y comparativos para la FPGA Intel Cyclone V presente en
+          la tarjeta DE1-SoC.
+
+    \item[(iii)] \textbf{Brecha en los protocolos de medición:} Reflejada en la
+          heterogeneidad de \textit{benchmarks}, métricas y metodologías de
+          verificación empleadas, que dificulta la comparación directa entre
+          estudios.\parencite{Heinz2019Catalog}
+
+    \item[(iv)] \textbf{Brecha a nivel de ISA:} Muchos trabajos se limitan al
+          conjunto base RV32I sin incorporar la extensión M, pese a su
+          relevancia en aplicaciones embebidas.
+          \parencite{Goh2024UTHMRISCV,RISCVFoundation2019}
+
+    \item[(v)] \textbf{Brecha de herramientas docentes:} No existe, para la
+          plataforma DE1-SoC, un módulo de visualización del estado interno
+          del pipeline RV32IM integrado directamente sobre FPGA y orientado
+          al uso en cursos de arquitectura de computadores, a diferencia de
+          los simuladores software revisados que operan desconectados del
+          hardware real.\parencite{Heinz2019Catalog,Harris2021Digital}
 \end{enumerate}
 
-El presente proyecto se propone abordar estas brechas mediante una comparación experimental controlada entre versiones monociclo y pipeline de un mismo procesador RV32IM, implementadas sobre la FPGA de la DE1-SoC y evaluadas con protocolos de verificación y benchmarking claramente definidos, con el objetivo de aportar evidencia cuantitativa y reproducible sobre los trade-offs entre ambas arquitecturas.
+El presente proyecto se propone abordar estas brechas mediante una comparación
+experimental controlada entre versiones monociclo y pipeline de un mismo
+procesador RV32IM, implementadas sobre la FPGA de la DE1-SoC y evaluadas con
+protocolos de verificación y benchmarking claramente definidos, con el objetivo
+de aportar evidencia cuantitativa y reproducible sobre los trade-offs entre
+ambas arquitecturas, y complementando ese aporte con un módulo de visualización orientado a la enseñanza de arquitectura de computadores.
+
 
 
